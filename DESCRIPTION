@@ -1,0 +1,12 @@
+Package: bcmeta
+Type: Package
+Title: R package for meta-analysis of breast cancer gene expressions
+Version: 0.0.2
+Date: 2013-10-12
+Author: Benjamin Haibe-Kains, Pierre-Olivier Bachant-Winner
+Maintainer: Benjamin Haibe-Kains <bhaibeka@uhnresearch.ca>
+Description: This package contains a set of functions to perform meta-analysis of breast cancer gene expressions.
+License: Artistic-2.0
+Imports:
+Depends: inSilicoDb2, jetset.bhk, survival, survcomp, genefu
+LinkingTo:
