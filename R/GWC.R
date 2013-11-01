@@ -8,24 +8,14 @@
 ## Normalize and import all data from Connectivity Map
 ##
 ## inputs:	
-##      - data: gene expression data matrix
-##			- drug: single or vector of drug(s) of interest; if a vector of drugs is provided, they will be considered as being the same drug and will be jointly analyszed
-##			- drug.id: drug used in each experiment
-##			- drug.concentration: drug concentration used in each experiment
-##			- cell: cell line for each experiment
-##			- xptype: type of experiment (perturbation or control)
-##      - batch: experiment batches
-##			- single: Shoudl the statitsics be computed for each cell line individually?
-##      - nthread: number of parallel threads (bound to the maximum number of cores available)
+##      - 
 ##
-## outputs, a list of 2 items:
-##			- meta: a data.frame including the statistics (standardidzed mean difference Hedges' g, its standard error, sample size for class 1 and class 2, p-value, p-value for heterogeneity between cell lines and probe annotations)
-##			- list of data.frame with similar results for each cell line separately if any
+## outputs, a list of items:
+##			- 
 ##
-## Notes:	duration is not taken into account as only 4 perturbations lasted 12h, the other 6096 lasted 6h
 #################################################
 
-`rankgenesCMAP` <- 
+`GWC` <- 
 function (data, drug, drug.id, drug.concentration, cell, xptype, batch, single.cell=FALSE, nthread=1, verbose=FALSE) {
   if (nthread != 1) {
     require(parallel)
