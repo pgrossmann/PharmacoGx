@@ -24,7 +24,7 @@ function (x, y, slope, intercept) {
  x2 <- x+10
  y1 <- x1*slope+intercept
  y2 <- x2*slope+intercept
- dd <- distancePointSegment(x,y, x1,y1, x2,y2)
+ dd <- distancePointSegment(x, y, x1, y1, x2, y2)
  return(dd)
 }
 

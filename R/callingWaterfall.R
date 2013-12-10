@@ -46,7 +46,7 @@ function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2)
     }
   )
   oo <- order(xx, decreasing=TRUE)
-  ## test linearity with Perason correlation
+  ## test linearity with Pearson correlation
   cc <- cor.test(-xx[oo], 1:length(oo), method="pearson")
   ## line between the two extreme sensitivity values
   dd <- cbind("y"=xx[oo][c(1, length(oo))], "x"=c(1, length(oo)))
@@ -96,7 +96,6 @@ function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2)
     mypch <- rep(16, length(xx))
     names(mypch) <- names(xx)
     mypch[cutoffn] <- 19
-        
     plot(xx[oo], col=mycol[oo], pch=mypch[oo], ylab=ylabel, main=sprintf("%s\nWaterfall", name))
     points(x=cutoff, y=xx[cutoffn], pch=mypch[cutoffn], col=mycol[cutoffn])
     abline(a=rr$coefficients[1], b=rr$coefficients[2], lwd=2, col="darkgrey")

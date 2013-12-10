@@ -22,11 +22,13 @@ function (px, py, x1, y1, x2, y2) {
  ## nearest endpoint.
  ##
  ## Returns 9999 on 0 denominator conditions.
- lineMagnitude <- function(x1, y1, x2, y2) sqrt((x2-x1)^2+(y2-y1)^2)
+ lineMagnitude <- function (x1, y1, x2, y2) {
+   return (sqrt((x2-x1)^2+(y2-y1)^2))
+ }
  ans <- NULL
  ix <- iy <- 0   # intersecting point
  lineMag <- lineMagnitude(x1, y1, x2, y2)
- if( lineMag < 0.00000001) {
+ if (lineMag < 0.00000001) {
    stop("Short segment")
  }
  u <- (((px - x1) * (x2 - x1)) + ((py - y1) * (y2 - y1)))
