@@ -8,5 +8,5 @@ Maintainer: Benjamin Haibe-Kains <bhaibeka@uhnresearch.ca>
 Description: This package contains a set of functions to perform arge-scale analysis of pharmacogenomic data
 License: Artistic-2.0
 Imports:
-Depends: inSilicoDb2, jetset.bhk, MetaGx, MASS
+Depends: inSilicoDb2, jetset.bhk, MetaGx, MASS, sva
 LinkingTo:
