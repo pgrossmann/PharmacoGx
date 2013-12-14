@@ -11,7 +11,7 @@
 #################################################
 
 `getCMAP` <- 
-function (std=c("combat", "quantile", "none"), gene=TRUE, nthread=1, verbose=FALSE) {
+function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
 
   # require(inSilicoDb2)
   # require(sva)
@@ -20,16 +20,18 @@ function (std=c("combat", "quantile", "none"), gene=TRUE, nthread=1, verbose=FAL
   
   InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
   # inSilicoDb2::getCurationInfo(dataset="ISDB12026")
-  if(verbose) { message("Downloading the Connectivity Map dataset from InSilicoDB") }
+  if (verbose) { message("Downloading the Connectivity Map dataset from InSilicoDB") }
   platfs <- inSilicoDb2::getPlatforms(dataset="ISDB12026")
-  esets <- inSilicoDb2::getDatasets(dataset="ISDB12026", norm="FRMA", curation="24391", features="PROBE")
+  esets <- inSilicoDb2::getDatasets(dataset="ISDB12026", norm="FRMA", curation="24697", features="PROBE")
   InSilicoLogout()
   
   ## merge esets
+  if (verbose) { message("Merging CMAP1 and CMAP2") }
   eset <- MetaGx::platformMerging(esets=esets)
   pheno <- Biobase::pData(eset)
   
   ## standardized of the expression data between the two microarray platforms
+  if (std != "none" && verbose) { message("Standardizing the data between the two CMAP1 and CMAP2") }
   switch (std, 
     "combat" = {
       batch <- as.factor(pheno[ ,"chiptype"])
@@ -45,9 +47,12 @@ function (std=c("combat", "quantile", "none"), gene=TRUE, nthread=1, verbose=FAL
       exprs(eset) <- t(MetaGx::normQuant(A=t(exprs(eset)), ties=TRUE, normvector=qnormvec.hthgu133acmap))
     }
   )
-  
+    
   ## gene centric expression
-  eset <- MetaGx::probeGeneMapping(eset=eset, platform="GPL96", metghod="jetset")
+  if (gene) {
+    if (verbose) { message("Gene centric data") }
+    eset <- MetaGx::probeGeneMapping(eset=eset, platform="GPL96", method="jetset")
+  }
   
   return (eset)
 }

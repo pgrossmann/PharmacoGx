@@ -2,11 +2,11 @@ Package: PharmacoGx
 Type: Package
 Title: R package for large-scale analysis of pharmacogenomic data
 Version: 0.0.1
-Date: 2013-10-23
+Date: 2013-12-13
 Author: Benjamin Haibe-Kains,
 Maintainer: Benjamin Haibe-Kains <bhaibeka@uhnresearch.ca>
 Description: This package contains a set of functions to perform arge-scale analysis of pharmacogenomic data
 License: Artistic-2.0
 Imports:
-Depends: inSilicoDb2, jetset.bhk, MetaGx, MASS, sva
+Depends: inSilicoDb2,jetset,MetaGx,genefu,MASS,sva,gdata,R.utils,parallel,Hmisc,affy,frma,hthgu133afrmavecs,hthgu133acdf
 LinkingTo:
