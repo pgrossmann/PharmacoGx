@@ -4,9 +4,14 @@ Title: R package for large-scale analysis of pharmacogenomic data
 Version: 0.0.1
 Date: 2013-12-13
 Author: Benjamin Haibe-Kains,
-Maintainer: Benjamin Haibe-Kains <bhaibeka@uhnresearch.ca>
+Maintainer: Benjamin Haibe-Kains <bhklab.research@gmai.com>
 Description: This package contains a set of functions to perform arge-scale analysis of pharmacogenomic data
 License: Artistic-2.0
 Imports:
+<<<<<<< HEAD
 Depends: inSilicoDb2, jetset, MetaGx, genefu, MASS, sva, gdata, R.utils, parallel, Hmisc, affy, frma, hthgu133afrmavecs, hthgu133acdf
 LinkingTo:
+=======
+Depends: inSilicoDb2,jetset,MetaGx,genefu,MASS,sva,gdata,R.utils,parallel,Hmisc,affy,frma,hthgu133afrmavecs,hthgu133acdf
+LinkingTo:
+>>>>>>> f96a1f0624c5cefe11be5b9fd54d26a87d7ebc63
