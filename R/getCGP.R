@@ -43,21 +43,25 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   pheno <- Biobase::pData(eset)
   switch(replicates,
     "first" = {
+      if (verbose) { message("First experiment of each replicate is kept") }
       iix <- order(pheno[ , "file_day"], pheno[ , "file_hour"], decreasing=FALSE, na.last=TRUE)
       ix <- rownames(pheno)[iix][!duplicated(pheno[iix, "cell_id"])]
       Biobase::exprs(eset) <- Biobase::exprs(eset)[ , ix, drop=FALSE]
       Biobase::pData(eset) <- Biobase::pData(eset)[ix, , drop=FALSE]
     },
     "last" = {
+      if (verbose) { message("Last experiment of each replicate is kept") }
       iix <- order(pheno[ , "file_day"], pheno[ , "file_hour"], decreasing=TRUE, na.last=TRUE)
       ix <- rownames(pheno)[iix][!duplicated(pheno[iix, "cell_id"])]
       Biobase::exprs(eset) <- Biobase::exprs(eset)[ , ix, drop=FALSE]
       Biobase::pData(eset) <- Biobase::pData(eset)[ix, , drop=FALSE]
     },
     "mean" = {
+      if (verbose) { message("Mean of replicates is computed") }
       stop(sprintf("Method replicates %s not implemented yet", replicates))
     },
     "median" = {
+      if (verbose) { message("Median of replicates is computed") }
       stop(sprintf("Method replicates %s not implemented yet", replicates))
       ix <- pheno[duplicated(pheno[ , "cell_id"]), "cell_id"]
       nn <- NULL
@@ -66,7 +70,9 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
         iix <- !is.na(pheno[ , "cell_id"]) & pheno[ , "cell_id"] == ix[i]
         xx <- apply(Biobase::exprs(eset)[ , iix], 1, get(replicates), na.rm=TRUE)
       }
-      
+    },
+    "all" = {
+      if (verbose) { message("All replicates are kept in the expression set") }
     }  
   )
   
@@ -212,7 +218,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   drugpheno <- drugpheno[!dupln, , drop=FALSE]
   if(any(!is.element(drugpheno[ ,"Cell.Line"], celline[ , "CELL_LINE_NAME"]))) { warning("Some cell line with drug sensitivity data have no annotations") }
   celln <- as.character(drugpheno[ ,"Cell.Line"])
-  drugpheno <- data.frame("cell_id"=celln, drugpheno)
+  drugpheno <- data.frame("cell_id"=celln, drugpheno, stringsAsFactors=FALSE))
   rownames(drugpheno) <- celln
 
   ## get mutational data, i.e., protein coding variants
@@ -292,17 +298,17 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
     druginfo[druginfo == "" | druginfo == " "] <- NA
     save(list="druginfo", compress=TRUE, file=myfn2)
   } else { load(myfn2) }
-  druginfo <- data.frame("drug_id"=gsub(pattern =badchars, replacement="", x=toupper(druginfo[ ,"Drug.ID"])), druginfo)
+  druginfo <- data.frame("drug_id"=gsub(pattern =badchars, replacement="", x=toupper(druginfo[ ,"Drug.ID"])), druginfo, stringsAsFactors=FALSE))
   rownames(druginfo) <- paste("drugid", as.character(druginfo[ ,"drug_id"]), sep="_")
 
   ## drug concentration
   if (verbose) { message("Read drug concentration") }
   drugconc <- read.csv(file.path(tmpdir, "cgp_drug_concentration.csv"), stringsAsFactors=FALSE)
   drugconc[drugconc == "" | drugconc == " "] <- NA
-  drugconc <- data.frame("drug.name"=toupper(gsub(badchars, "", drugconc[ ,"Compound.Name"])), drugconc)
+  drugconc <- data.frame("drug.name"=toupper(gsub(badchars, "", drugconc[ ,"Compound.Name"])), drugconc, stringsAsFactors=FALSE))
   if(all(!is.element(drugconc[ , "drug.name"], drugnid[ , "drug.name"]))) { stop("Screening concentration for drugs ithout identifiers!") }
   rownames(drugconc) <- rownames(drugnid)[match(drugconc[ , "drug.name"], drugnid[ , "drug.name"])]
-  drugconc <- data.frame("drug_id"=rownames(drugconc), drugconc)
+  drugconc <- data.frame("drug_id"=rownames(drugconc), drugconc, stringsAsFactors=FALSE)
 
   ## combine all drugs
   dix <- sort(unique(c(rownames(druginfo), rownames(drugconc), paste("drugid", sapply(strsplit(colnames(drugpheno)[grep("^drugid_", colnames(drugpheno))], "_"), function(x) { return(x[[2]]) }), sep="_"))))
