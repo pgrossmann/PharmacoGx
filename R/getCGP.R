@@ -11,7 +11,7 @@
 #################################################
 
 `getCGP` <- 
-function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE, cosmic.version="v67_241013", replicates=c("all", "first", "last", "mean", "median"), verbose=FALSE) {
+function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE, cosmic.version="v67_241013", replicates=c("last", "first", "all", "mean", "median"), verbose=FALSE) {
 
   replicates <- match.arg(replicates)
   
@@ -24,7 +24,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
   # inSilicoDb2::getCurationInfo(dataset="ISDB12210")
   platf <- inSilicoDb2::getPlatforms(dataset="ISDB12210")
-  eset <- inSilicoDb2::getDatasets(dataset="ISDB12210", norm="FRMA", curation="24717", features="PROBE")
+  eset <- inSilicoDb2::getDatasets(dataset="ISDB12210", norm="FRMA", curation="24802", features="PROBE")
   InSilicoLogout()
   
   ## only one platform, may be subject to change
@@ -43,21 +43,22 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   pheno <- Biobase::pData(eset)
   switch(replicates,
     "first" = {
-      iix <- order(pheno[ , "file_day"], pheno[ , "file_hour"], decreasing=FALSE)
+      iix <- order(pheno[ , "file_day"], pheno[ , "file_hour"], decreasing=FALSE, na.last=TRUE)
       ix <- rownames(pheno)[iix][!duplicated(pheno[iix, "cell_id"])]
       Biobase::exprs(eset) <- Biobase::exprs(eset)[ , ix, drop=FALSE]
       Biobase::pData(eset) <- Biobase::pData(eset)[ix, , drop=FALSE]
     },
     "last" = {
-      iix <- order(pheno[ , "file_day"], pheno[ , "file_hour"], decreasing=TRUE)
+      iix <- order(pheno[ , "file_day"], pheno[ , "file_hour"], decreasing=TRUE, na.last=TRUE)
       ix <- rownames(pheno)[iix][!duplicated(pheno[iix, "cell_id"])]
       Biobase::exprs(eset) <- Biobase::exprs(eset)[ , ix, drop=FALSE]
       Biobase::pData(eset) <- Biobase::pData(eset)[ix, , drop=FALSE]
     },
-    "mean",
+    "mean" = {
+      stop(sprintf("Method replicates %s not implemented yet", replicates))
+    },
     "median" = {
       stop(sprintf("Method replicates %s not implemented yet", replicates))
-      
       ix <- pheno[duplicated(pheno[ , "cell_id"]), "cell_id"]
       nn <- NULL
       ex <- matrix(NA, nrow=nrow(Biobase::fData(eset)), ncol=sum(!duplicated(pheno[ , "cell_id"]), na.rm=TRUE), dimnames=list(rownames(Biobase::fData(eset)), nn))
@@ -277,10 +278,11 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   iix <- intersect(rownames(celline), cellnall)
   dd[iix, colnames(celline)] <- celline[iix, , drop=FALSE]
   celline <- dd
+  celline[ , "cell_id"] <- celline[ , "CELL_LINE_NAME"] <- rownames(celline)
   ## annotate cell lines with curated tissue type
   tissue.type <- read.csv(file.path(system.file("extdata", package="PharmacoGx"), "cell_line_collection_all.csv"), stringsAsFactors=FALSE)
   rownames(tissue.type) <- tissue.type[ , 1]
-  celline <- cbind("tissue.type"=tissue.type[match(celline[ , "cell_id"], tissue.type[ , "cell_id"]), "CGP.tissue.type"], celline)
+  celline <- cbind("tissue.type"=tissue.type[match(celline[ , "cell_id"], tissue.type[ , "cell_id"]), "tissue.type"], celline)
 
   ## drug information
   if (verbose) { message("Read drug information") }
