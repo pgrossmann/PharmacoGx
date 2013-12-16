@@ -218,7 +218,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   drugpheno <- drugpheno[!dupln, , drop=FALSE]
   if(any(!is.element(drugpheno[ ,"Cell.Line"], celline[ , "CELL_LINE_NAME"]))) { warning("Some cell line with drug sensitivity data have no annotations") }
   celln <- as.character(drugpheno[ ,"Cell.Line"])
-  drugpheno <- data.frame("cell_id"=celln, drugpheno, stringsAsFactors=FALSE))
+  drugpheno <- data.frame("cell_id"=celln, drugpheno, stringsAsFactors=FALSE)
   rownames(drugpheno) <- celln
 
   ## get mutational data, i.e., protein coding variants
@@ -298,14 +298,14 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
     druginfo[druginfo == "" | druginfo == " "] <- NA
     save(list="druginfo", compress=TRUE, file=myfn2)
   } else { load(myfn2) }
-  druginfo <- data.frame("drug_id"=gsub(pattern =badchars, replacement="", x=toupper(druginfo[ ,"Drug.ID"])), druginfo, stringsAsFactors=FALSE))
+  druginfo <- data.frame("drug_id"=gsub(pattern =badchars, replacement="", x=toupper(druginfo[ ,"Drug.ID"])), druginfo, stringsAsFactors=FALSE)
   rownames(druginfo) <- paste("drugid", as.character(druginfo[ ,"drug_id"]), sep="_")
 
   ## drug concentration
   if (verbose) { message("Read drug concentration") }
   drugconc <- read.csv(file.path(tmpdir, "cgp_drug_concentration.csv"), stringsAsFactors=FALSE)
   drugconc[drugconc == "" | drugconc == " "] <- NA
-  drugconc <- data.frame("drug.name"=toupper(gsub(badchars, "", drugconc[ ,"Compound.Name"])), drugconc, stringsAsFactors=FALSE))
+  drugconc <- data.frame("drug.name"=toupper(gsub(badchars, "", drugconc[ ,"Compound.Name"])), drugconc, stringsAsFactors=FALSE)
   if(all(!is.element(drugconc[ , "drug.name"], drugnid[ , "drug.name"]))) { stop("Screening concentration for drugs ithout identifiers!") }
   rownames(drugconc) <- rownames(drugnid)[match(drugconc[ , "drug.name"], drugnid[ , "drug.name"])]
   drugconc <- data.frame("drug_id"=rownames(drugconc), drugconc, stringsAsFactors=FALSE)
