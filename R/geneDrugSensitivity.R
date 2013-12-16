@@ -15,8 +15,7 @@ geneDrugSensitivity <- function(x, type, batch, drugpheno, interaction.typexgene
 ##
 ## output:
 ##  vector reporting the effect size (estimateof the coefficient of drug concentration), standard error (se), sample size (n), t statistic, and F statistics and its corresponding p-value
-  
-  # require(MASS) || stop("Library MASS is not available!")
+
   ccix <- complete.cases(x, type, batch, drugpheno)
   nn <- sum(ccix)
   if(nn < 3 || var(x, na.rm=TRUE) == 0) {

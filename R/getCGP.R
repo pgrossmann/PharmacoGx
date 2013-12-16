@@ -384,7 +384,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
     sapply(tmpfiles, function (x) { unlink(x, recursive=TRUE) })
   }
 
-  return (list("expressions"=eset, "mutation"=mutation, "cell.line"=celline, "drug"=list("info"=druginfo, "concentration"=drugconc, "ic50"=ic50, "ic50.call"=ic50.call, "auc"=auc, "auc.call"=auc.call)))
+  return (list("expression"=eset, "mutation"=mutation, "cell.line"=celline, "drug"=list("info"=druginfo, "concentration"=drugconc, "duration"=NULL, "ic50"=ic50, "ic50.call"=ic50.call, "auc"=auc, "auc.call"=auc.call)))
 }
 
 ## End

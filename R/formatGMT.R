@@ -24,8 +24,6 @@ function (infile, outfile, replace=FALSE, verbose=TRUE) {
     if(!replace) { stop("Output file already exists!") }
     file.remove(outfile)
   }
-    
-	suppressPackageStartupMessages(require(GSA)) || stop("Library GSA is not available!")
   
   badchars <- "[,][:]|[-]|[+]|[*]|[%]|[$]|[#]|[{]|[}]|[[]|[]]|[|]|[\\^]|[/]|[\\]|[.]|[_]|[ ]"
   

@@ -45,7 +45,6 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
          celfn <- c(celfn, as.character(fff[ ,"Name"]))
          res <- unzip(zipfile=file.path(tmpdir, sprintf("E-MTAB-783.raw.%i.zip", i)), exdir=rawdir)
          ## compress each CEL file individually using gzip
-         library(R.utils)
          sapply(file.path(rawdir, as.character(fff[ ,"Name"])), R.utils::gzip, overwrite=TRUE)
          i <- i + 1
        }
@@ -355,10 +354,8 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
 
     ## build annotation matrix
     message("Build annotation matrix")
-    require(biomaRt) || stop("Library biomaRt is not available!")
     mart.db <- biomaRt::useMart("ENSEMBL_MART_ENSEMBL", host="www.ensembl.org", dataset="hsapiens_gene_ensembl")
     ## select the best probe for a single gene
-    require(jetset) || stop("Library jetset is not available!")
     js <- jetset::jscores(chip="hgu133a", probeset=colnames(datat))
     js <- js[colnames(datat), , drop=FALSE]
     ## identify the best probeset for each entrez gene id
@@ -383,7 +380,6 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
     js[gg.uniq, "best"] <- TRUE
     ## data for duplicated gene ids
     if(length(gid.dupl) > 0) {	
-    	library(jetset)
     	## use jetset oevrall score to select the best probeset
     	myscore <- js[gg.dupl,"overall"]
     	myscore <- cbind("probe"=gg.dupl, "gid"=geneid1[gg.dupl], "score"=myscore)

@@ -26,8 +26,6 @@
 function (gid, value, gokeep=c("biological_process", "molecular_function", "cellular_component"), mart.db, outfile, replace=FALSE, verbose=TRUE, ...) {
 
 	## create GO terms for ensembl ids
-	suppressPackageStartupMessages(require(biomaRt)) || stop("Library biomaRt is not available!")
-
 	gokeep <- match.arg(gokeep)
 	if(missing(gid)) { gid <- getBM(attributes=value, filters="", values="", mart.db, ...)[ ,1] }
   

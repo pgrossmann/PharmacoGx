@@ -35,12 +35,6 @@ function () {
   myfn <- file.path(respath, "cmap_frma.RData")
 
   if(!file.exists(myfn)) {
-    library(affy)
-    library(frma)
-    #library(frmaTools)
-    library(Hmisc)
-    library(genefu)
-
     ## read cel files data
 
     ## CEL file names
@@ -122,7 +116,6 @@ function () {
 
     	## add SMILES and other information about perturbagens
     	#	load ChemBank data in MLD MOL (.sdf) and convert into matrix
-    	library(rcdk)
     	CBdata <- load.molecules(c("data/CMAP/CmapChembankCompounds-1.sdf","data/CMAP/CmapChembankCompounds-2.sdf")) # molecule data
     	smiles <- CBID  <- inchi <- NULL
     	for (x in  1:length(CBdata)) {
@@ -198,7 +191,6 @@ function () {
     platf <- "HG-U133A"
     message(sprintf("Affymetrix platform %s", platf))
     ## load frmavectors
-    library(hgu133afrmavecs)
     data(hgu133afrmavecs)
 
     ## format the data using frma
@@ -229,7 +221,6 @@ function () {
     ## HT_HG-U133A
     platf <- "HT_HG-U133A"
     message(sprintf("Affymetrix platform %s", platf))
-    library(hthgu133afrmavecs)
     data(hthgu133afrmavecs)
 
     ## format the data using frma
@@ -264,10 +255,8 @@ function () {
     data.hthgu133a <- data.hthgu133a[ , probeset.common, drop=FALSE]
 
     # annotations for hgu133a
-    library(biomaRt)
     mart.db <- biomaRt::useMart("ENSEMBL_MART_ENSEMBL", host="www.ensembl.org", dataset="hsapiens_gene_ensembl")
     # select the best probe for a single gene
-    library(jetset)
     js <- jetset::jscores(chip="hgu133a", probeset=probeset.common)
     js <- js[probeset.common, , drop=FALSE]
     # identify the best probeset for each entrez gene id
@@ -292,7 +281,6 @@ function () {
     js[gg.uniq, "best"] <- TRUE
     # data for duplicated gene ids
     if(length(gid.dupl) > 0) {	
-    	library(jetset)
     	## use jetset oevrall score to select the best probeset
     	myscore <- js[gg.dupl,"overall"]
     	myscore <- cbind("probe"=gg.dupl, "gid"=geneid1[gg.dupl], "score"=myscore)
