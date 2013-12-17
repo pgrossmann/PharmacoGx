@@ -28,6 +28,11 @@ function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
   ## merge esets
   if (verbose) { message("Merging CMAP1 and CMAP2") }
   eset <- MetaGx::platformMerging(esets=esets)
+  Biobase::pData(eset)[Biobase::pData(eset) == "" | Biobase::pData(eset) == "NA"] <- NA
+  ## check column format
+  Biobase::pData(eset)[ , "concentration_M"] <- as.numeric(Biobase::pData(eset)[ , "concentration_M"])
+  Biobase::pData(eset)[ , "duration_h"] <- as.numeric(Biobase::pData(eset)[ , "duration_h"])
+  
   ## standardized of the expression data between the two microarray platforms
   if (std != "none" && verbose) { message("Standardizing the data between CMAP1 and CMAP2") }
   switch (std, 
