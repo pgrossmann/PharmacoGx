@@ -299,7 +299,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
     save(list="druginfo", compress=TRUE, file=myfn2)
   } else { load(myfn2) }
   druginfo <- data.frame("drug_id"=gsub(pattern =badchars, replacement="", x=toupper(druginfo[ ,"Drug.ID"])), druginfo, stringsAsFactors=FALSE)
-  rownames(druginfo) <- paste("drugid", as.character(druginfo[ ,"drug_id"]), sep="_")
+  rownames(druginfo) <- druginfo[ ,"drug_id"] <- paste("drugid", as.character(druginfo[ ,"drug_id"]), sep="_")
 
   ## drug concentration
   if (verbose) { message("Read drug concentration") }

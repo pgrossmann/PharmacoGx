@@ -57,7 +57,7 @@ function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "
     if (!is.list(splitix)) { splitix <- list(splitix) }
     splitix <- splitix[sapply(splitix, length) > 0]
     mcres <- parallel::mclapply(splitix, function(x, xx, yy, ww) {
-      pres <- sapply(x, function(x, xx, yy, www) {
+      pres <- sapply(x, function(x, xx, yy, ww) {
         ## permute the data and the weights
         d2 <- cbind(xx[sample(1:length(xx))], yy[sample(1:length(yy))])
         w2 <- ww[sample(1:length(ww))]
