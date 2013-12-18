@@ -16,6 +16,7 @@ geneDrugSensitivity <- function(x, type, batch, drugpheno, interaction.typexgene
 ## output:
 ##  vector reporting the effect size (estimateof the coefficient of drug concentration), standard error (se), sample size (n), t statistic, and F statistics and its corresponding p-value
 
+  nc <- c("estimate", "se", "n", "tstat", "fstat", "pvalue")
   ccix <- complete.cases(x, type, batch, drugpheno)
   nn <- sum(ccix)
   if(nn < 3 || var(x, na.rm=TRUE) == 0) {
@@ -41,13 +42,15 @@ geneDrugSensitivity <- function(x, type, batch, drugpheno, interaction.typexgene
   rrc <- anova(rr0, rr1)
   rr <- summary(rr1)
   tt <- c("estimate"=rr$coefficients["x", "Estimate"], "se"=rr$coefficients["x", "Std. Error"], "n"=nn, "tsat"=rr$coefficients["x", "t value"], "fstat"=rrc$F[2], "pvalue"=rrc$'Pr(>F)'[2])
-  names(tt) <- c("estimate", "se", "n", "tstat", "fstat", "pvalue")
+  names(tt) <- nc
+  ## add tissue type/cell line statistics
   if(length(sort(unique(type))) > 1) {
     rr <- summary(rr0)
     ttype <- c("type.fstat"=rr$fstatistic["value"], "type.pvalue"=pf(q=rr$fstatistic["value"], df1=rr$fstatistic["numdf"], df2=rr$fstatistic["dendf"], lower.tail=FALSE))
     names(ttype) <- c("type.fstat", "type.pvalue")
   } else { ttype <- c("type.fstat"=NA, "type.pvalue"=NA) }
   tt <- c(tt, ttype)
+  ## add model
   if(model) { tt <- list("stats"=tt, "model"=rr1) }
   return(tt)
 }

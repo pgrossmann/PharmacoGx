@@ -70,7 +70,6 @@ function () {
     					myfn <- paste(tt[-length(tt)], collapse=".")
     					system(sprintf("gunzip %s", x, myfn))
     				}
-    				require(affxparser)
     				rr <- affxparser::convertCel(filename=sprintf("%s/%s", mypath, myfn), outFilename=sprintf("data/CMAP/%s/%s", nd, myfn), newChipType="HT_HG-U133A", validate=TRUE)
     				system(sprintf("gzip %s", sprintf("%s/%s", mypath, myfn)))
     				system(sprintf("gzip %s", rr))

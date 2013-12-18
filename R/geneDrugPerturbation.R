@@ -46,6 +46,14 @@ geneDrugPerturbation <- function(x, concentration, type, batch, model=FALSE) {
     tt <- c("estimate"=mm$coefficients["concentration", "Estimate"], "se"=mm$coefficients["concentration", "Std. Error"], "n"=nn, "tsat"=mm$coefficients["concentration", "t value"], "fstat"=mmc$F[2], "pvalue"=mmc$'Pr(>F)'[2])
   }
   names(tt) <- nc
+  ## add tissue type/cell line statistics
+  if(length(sort(unique(type))) > 1) {
+    rr <- summary(rr0)
+    ttype <- c("type.fstat"=rr$fstatistic["value"], "type.pvalue"=pf(q=rr$fstatistic["value"], df1=rr$fstatistic["numdf"], df2=rr$fstatistic["dendf"], lower.tail=FALSE))
+    names(ttype) <- c("type.fstat", "type.pvalue")
+  } else { ttype <- c("type.fstat"=NA, "type.pvalue"=NA) }
+  tt <- c(tt, ttype)
+  ## add model
   if (model) { tt <- list("stats"=tt, "model"=mm)}
   return(tt)
 }

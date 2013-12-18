@@ -19,7 +19,6 @@
 ## courtesy of Matthew McCall
 `celfileDateHour` <-
 function (filename) {
-	require(affyio)
 	h <- affyio::read.celfile.header(filename, info="full")
 	#ddate <- grep("/", strsplit(h$DatHeader, " ")[[1]], value=TRUE)
 	#ddate <- strsplit(ddate, split="/")[[1]]

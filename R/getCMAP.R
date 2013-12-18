@@ -13,9 +13,6 @@
 `getCMAP` <- 
 function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
 
-  # require(inSilicoDb2)
-  # require(sva)
-
   std <- match.arg(std)
   
   InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")

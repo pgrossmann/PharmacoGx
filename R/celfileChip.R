@@ -19,7 +19,6 @@
 ## courtesy of Matthew McCall
 `celfileChip` <-
 function (filename) {
-  	require(affyio)
   	h <- affyio::read.celfile.header(filename, info="full")
   	return(as.character(h$cdfName))
   }

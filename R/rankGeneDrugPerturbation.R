@@ -28,7 +28,6 @@
 `rankGeneDrugPerturbation` <- 
 function (data, drug, drug.id, drug.concentration, type, xp, batch, single.type=FALSE, nthread=1, verbose=FALSE) {
   if (nthread != 1) {
-    require(parallel)
     availcore <- parallel::detectCores()
     if (missing(nthread) || nthread < 1 || nthread > availcore) {
       nthread <- availcore
@@ -99,7 +98,7 @@ function (data, drug, drug.id, drug.concentration, type, xp, batch, single.type=
     names(ltype)[-1] <- utype
   }
   for(ll in 1:length(ltype)) {
-    ## select the type line of interest
+    ## select the type of cell line/tissue of interest
     inpumat2 <- inpumat[!is.na(inpumat[ , "type"]) & is.element(inpumat[ , "type"], ltype[[ll]]), , drop=FALSE]
     inpumat2 <- inpumat2[complete.cases(inpumat2), , drop=FALSE]
     if (nrow(inpumat2) < 3 || length(sort(unique(inpumat2[ , "concentration"]))) < 2) {
@@ -118,17 +117,6 @@ function (data, drug, drug.id, drug.concentration, type, xp, batch, single.type=
     		}, data=data, inpumat=inpumat2)
         rest <- do.call(rbind, mcres)
       } else {
-        ##################
-        ## DEBUG
-        # browser()
-        # genec <- intersect(rownames(angiogenes), colnames(data))
-        # aa <- angiogenes[genec, "NetworkClassification"]
-        # rest <- t(apply(data[rownames(inpumat2), genec, drop=FALSE], 2, geneDrugPerturbation, concentration=inpumat2[ , "concentration"], type=inpumat2[ , "type"], batch=inpumat2[ , "batch"]))
-        # rr <- apply(data[rownames(inpumat2), genec, drop=FALSE], 2, function(x, concentration) { return(mean(x[concentration != 0], na.rm=TRUE) - mean(x[concentration == 0], na.rm=TRUE)) }, concentration=inpumat2[ , "concentration"])
-        # boxplot(rr ~ aa, outline=FALSE, main="Simple fold change")
-        # X11()
-        # boxplot(rest[ , "estimate"] ~ aa, outline=FALSE, main="Coefficient in linear model")
-        ##################
         rest <- t(apply(data[rownames(inpumat2), , drop=FALSE], 2, geneDrugPerturbation, concentration=inpumat2[ , "concentration"], type=inpumat2[ , "type"], batch=inpumat2[ , "batch"]))
       }
     }

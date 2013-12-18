@@ -26,29 +26,28 @@
 #################################################
 
 `rankGeneDrugSensitivity` <- 
-function (data, drug, drug.id, drug.concentration, type, xp, batch, single.type=FALSE, nthread=1, verbose=FALSE) {
+function (data, drug, drug.pheno, type, batch, single.type=FALSE, nthread=1, verbose=FALSE) {
   if (nthread != 1) {
-    require(parallel)
     availcore <- parallel::detectCores()
     if (missing(nthread) || nthread < 1 || nthread > availcore) {
       nthread <- availcore
     }
   }
-	if (any(c(length(drug.id), length(drug.concentration), length(type), length(xp), length(batch)) != nrow(data))) {
-    stop("length of drug.id, drug.concentration, type, xp and batch should be equal to the number of rows of data!")
+	if (any(c(length(drug.pheno), length(type), length(batch)) != nrow(data))) {
+    stop("length of drug.pheno, type, xp and batch should be equal to the number of rows of data!")
   }
-	names(drug.id) <- names(drug.concentration) <- names(type) <- names(batch) <- rownames(data)
+	names(drug.pheno) <- names(type) <- names(batch) <- rownames(data)
 	if (!all(complete.cases(type, xp, batch))) {
-    stop("type, batch, and xp should not contain missing values!")
+    stop("type, and batch should not contain missing values!")
   }
-  ## is the drug in CMAP?
-  drugix <- drug.id %in% drug
+  ## is the drug in CGP?
+  drugix <- colnames(drug.pheno) %in% drug
   if (sum(drugix) == 0) {
-    warning(sprintf("Drug(s) %s not in CMAP", paste(drug, collapse=", ")))
+    warning(sprintf("Drug(s) %s not in CGP", paste(drug, collapse=", ")))
     return(list("all.type"=NULL, "single.type"=NULL))
   }
 	## select xps with controls or with the drug(s) of interest
-	iix <- is.na(drug.id) | drugix
+	iix <- !is.na(colnames(drugpheno)) & drugix
 	data <- data[iix, ,drop=FALSE]
 	drug.id <- drug.id[iix]
 	drug.concentration <- drug.concentration[iix]
@@ -118,17 +117,6 @@ function (data, drug, drug.id, drug.concentration, type, xp, batch, single.type=
     		}, data=data, inpumat=inpumat2)
         rest <- do.call(rbind, mcres)
       } else {
-        ##################
-        ## DEBUG
-        # browser()
-        # genec <- intersect(rownames(angiogenes), colnames(data))
-        # aa <- angiogenes[genec, "NetworkClassification"]
-        # rest <- t(apply(data[rownames(inpumat2), genec, drop=FALSE], 2, geneDrugPerturbation, concentration=inpumat2[ , "concentration"], type=inpumat2[ , "type"], batch=inpumat2[ , "batch"]))
-        # rr <- apply(data[rownames(inpumat2), genec, drop=FALSE], 2, function(x, concentration) { return(mean(x[concentration != 0], na.rm=TRUE) - mean(x[concentration == 0], na.rm=TRUE)) }, concentration=inpumat2[ , "concentration"])
-        # boxplot(rr ~ aa, outline=FALSE, main="Simple fold change")
-        # X11()
-        # boxplot(rest[ , "estimate"] ~ aa, outline=FALSE, main="Coefficient in linear model")
-        ##################
         rest <- t(apply(data[rownames(inpumat2), , drop=FALSE], 2, geneDrugPerturbation, concentration=inpumat2[ , "concentration"], type=inpumat2[ , "type"], batch=inpumat2[ , "batch"]))
       }
     }

@@ -19,9 +19,13 @@
 `corWeighted` <- 
 function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "greater", "less"), permutation.test=FALSE, nperm=1000, nthread=1, setseed, na.rm=FALSE) {
  
-  if(missing(w)) { w <- rep(1, nrow(d))/nrow(d) }
+  if (missing(w)) { w <- rep(1, length(x)) / length(x) }
+  if (length(x) != length(y) || length(x) != length(w)) { stop("x, y, and w must have the same length") }
   method <- match.arg(method)
-  if(method == "spearman") { d <- apply(d, 2, rank) }
+  if (method == "spearman") {
+    x <- rank(x)
+    y <- rank(y)
+  }
   alternative <- match.arg(alternative)
   
   wcor <- function (d, w) {
@@ -48,7 +52,6 @@ function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "
   
   p <- NULL
   if (permutation.test) {
-    require(parallel)
     if (!missing(setseed)) { set.seed(setseed) }
     splitix <- parallel::splitIndices(nx=nperm, ncl=nthread)
     if (!is.list(splitix)) { splitix <- list(splitix) }
@@ -56,7 +59,7 @@ function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "
     mcres <- parallel::mclapply(splitix, function(x, xx, yy, ww) {
       pres <- sapply(x, function(x, xx, yy, www) {
         ## permute the data and the weights
-        d2 <- cbind(xx[[sample(1:length(xx))]], yy[sample(1:length(yy))])
+        d2 <- cbind(xx[sample(1:length(xx))], yy[sample(1:length(yy))])
         w2 <- ww[sample(1:length(ww))]
         return(wcor(d=d2, w=w2))
       }, xx=xx, yy=yy, ww=ww)
@@ -78,7 +81,7 @@ function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "
         p <- sum(perms <= res) 
         if (p == 0) { p <- 1 / (nperm + 1) } else { p <- p / nperm }
       })
-    res <- list("rho"=res, "p"=p)
+    res <- c("rho"=res, "p"=p)
   }
   return(res)
 }
