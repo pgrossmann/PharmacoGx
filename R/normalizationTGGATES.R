@@ -5,6 +5,7 @@
 #' @param sourcedir [character] path to local sourcedir, if data has been downloaded already, 
 #' or NULL otherwise
 normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NULL) {
+  require(ArrayExpress) # for getAE and Biobase  
 
   #-----------------------------------------------------------------
   ### setup
@@ -15,7 +16,7 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   
   if (!is.null(sourcedir)) {
     if (!file.exists(sourcedir)) stop("sourcedir does not exist!")
-    else local <- TRUE # if data has been downloaded already
+    local <- TRUE # if data has been downloaded already
   } else {
     sourcedir <- tmpdir
   }
@@ -34,25 +35,27 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   adf <- file.path(sourcedir, adfNames)
   sdrf <- file.path(sourcedir, sdrfNames)
   idf <- file.path(sourcedir, idfNames)
-  cel <- file.path(sourcedir, celNames)
+  #cel <- file.path(sourcedir, celNames)
   
   #-----------------------------------------------------------------
   ### read data and normalization (rma)
   #-----------------------------------------------------------------
  
   ## read in phenotype data ##
-  pheno <- read.table(adf, sep="\t", stringsAsFactors=F)
+  pheno <- read.csv(sdrf, sep="\t", stringsAsFactors=F)
   
   ## read in feature data ##
-  featu <- read.table(sdrf, sep="\t", stringsAsFactors=F)
+  #featu <- read.table(adf, sep="\t", stringsAsFactors=F)
   
   ## read in experiment data ##
-  experiment <- read.table(idf, sep="\t", stringsAsFactors=F)
+  #experiment <- read.table(idf, sep="\t", stringsAsFactors=F)
 
   ## read in, normalize, and save initial expression data ##
   eSet.orig.fn <- file.path(sourcedir, "eSet.orig.rda")
-  if (!file.exists(eSet.orig.fn) {
-    eSet.orig <- affy::justRMA(filenames=cel)
+  if (!file.exists(eSet.orig.fn)) {
+  print("hi")
+  browser()
+    eSet.orig <- affy::justRMA(filenames=celNames)
     save(eSet.orig, file=eSet.orig.fn)
   } else load(eSet.orig.fn)
   
@@ -60,8 +63,10 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   ### curation
   #-----------------------------------------------------------------
   
+  ## assign correct phenotype labels ##
   
-  ##
+  #celnames2samplenames <- 
+  #colnames(exprs) <- 
   
   
 }
