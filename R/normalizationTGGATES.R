@@ -17,16 +17,26 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   
   pVerbose <- function(message) { if (verbose) print(message) }
 
+  #' function NOT used atm!
+  #' @param samples [data.frame/table] subtable of duplica
+  #' @param return row
+  duplicate.samples <- function(samples) {
+    samples[1, , drop=F]
+  }
+  
+  #' @param sdrf [data.frame/table] full phenotype table (sdrf file)
+  #' @param return [data.frame/table] subset of phenotype table without duplicates
+  duplicate.sdrf <- function(sdrf) {
+    sdrf[!duplicated(sdrf[,"Source.Name"]), , drop=F]
+  }
+  
   #-----------------------------------------------------------------
   ### setup data
   #-----------------------------------------------------------------
-  print("setting up data")
+  message("setting up data")
   
   # initially assume data needs to be downloaded
   local <- FALSE
-  
-  # tmpdir
-  if (!file.exists(tmpdir)) dir.create(tmpdir)
   
   if (!is.null(sourcedir)) {
     if (!file.exists(sourcedir)) stop("sourcedir does not exist!")
@@ -35,7 +45,11 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   } else {
     pVerbose("will download data to tmpdir")
     sourcedir <- tmpdir
+      # tmpdir
+    if (!file.exists(sourcedir)) dir.create(sourcedir)
   }
+  
+  # don't use tmpdir from here on #
   
   ## download data if not done yet ##
   pVerbose("processing raw array data")
@@ -57,12 +71,13 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   adf <- file.path(sourcedir, adfNames)
   sdrf <- file.path(sourcedir, sdrfNames)
   idf <- file.path(sourcedir, idfNames)
-  #cel <- file.path(sourcedir, celNames)
+  #cel <- file.path(prependCEL, celNames)
   
-  #-----------------------------------------------------------------
+  ###################################################################
   ### read data and normalization (rma)
-  #-----------------------------------------------------------------
-  print("normalizing expression data")
+  ### The magic starts here ! ###
+  ###################################################################
+  message("read in phenotype data and expression data")
  
   ## read in phenotype data ##
   pVerbose("reading in phenotype data")
@@ -78,10 +93,21 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
 
   ## read in, normalize, and save initial expression data ##
   pVerbose("reading in expression data")
-  eSet.orig.fn <- file.path(tmpdir, "eSet.orig.rda")
+  eSet.orig.fn <- file.path(sourcedir, sprintf("%s_eSet_orig.rda",identifier))
   if (!file.exists(eSet.orig.fn)) {
     message("creating normalized expression set")
-    eSet.orig <- affy::justRMA(filenames=celNames)
+    ## this is kind of messy! but cannot be avoided as justRMA prepends getwd()....
+    wd <- getwd() # use this to set and unset wd
+    tryCatch({
+        setwd(sourcedir)
+        eSet.orig <- affy::justRMA(filenames=celNames)
+      },
+      error=function(e) {
+        setwd(wd)
+        stop("something wrong with a CEL file!!")
+      }
+    )
+    setwd(wd)
     save(eSet.orig, file=eSet.orig.fn)
     message(sprintf("eSet successfully stored to %s", eSet.orig.fn))
   } else load(eSet.orig.fn)
@@ -89,21 +115,59 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   #-----------------------------------------------------------------
   ### curation, depending on organism (rat, human, etc)
   #-----------------------------------------------------------------
-  print("curating data")  
+  message("curating data")  
+  
+  # work on expression data seperately; consider to rm(eSet.orig}
+  geneex <- exprs(eSet.orig)
+  
+  ## curate phenotype data ##
+  
+  pVerbose("remove phenotype duplicates")
+  sdrf.unique <- duplicate.sdrf(sdrf)
+  rownames(sdrf.unique) <- sdrf.unique[,"Source.Name"] # check if really unique
+  print(sprintf("%s duplicate sample names have been removed",nrow(sdrf)-nrow(sdrf.unique)))
+  # keep unique expressions
+  geneex <- geenex[,sdrf.unique[,"Array.Data.File"]]
+  # assign better phenotype labels to expression data
+  colnames(geneex) <- 
+  sdrf.unique[match(colnames(geneex),sdrf.unique[,"Array.Data.File"]),"Source.Name"]
   
   ## map probes to gene IDs ##
   
+  pVerbose("chose chip database")
   db <-
   switch(identifier,
     "E-MTAB-797"=rat2302.db)
   
-  ## assign correct phenotype labels
+  pVerbose("map probes to entrez gene ids")
+  gids <- select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
   
-  #celnames2samplenames <- 
-  #colnames(exprs) <- 
+  ## remove probes not matchable to gene id
+  gids.fullmatched <- gids[!is.na(gids[,"ENTREZID"]), , drop=F]
+  print(sprintf("%s probes did not match a entrez gene and were removed",nrow(gids)-nrow(gids.fullmatched)))
   
+  ## select unique genes
+  pVerbose("select unique genes")
+  probes2gids <- gids.fullmatched[,"ENTREZID"]
+  names(probes2gids) <- gids.fullmatched[,"PROBEID"]
+  pVerbose("geneid.map(probes2gids,t(geneex),probes2gids) performed")
+  geneMapResults <- genefu::geneid.map(probes2gids,t(geneex),probes2gids)
+  gids.fullmatched.unique <- geneMapResults$geneid1
+  print(sprintf("Of %s probes, %s were unique genes were selected", length(probes2ids), length(gids.fullmatched.unique)))
   
+  ## assign gene ids to expression data and subset accordingly ##
+  pVerbose("subsetting expression data")
+  geneex <- geneex[names(gids.fullmatched.unique),]
+  pVerbose("creating expression set with full annotation")
+  varmetadata <- data.frame(labelDescription=colnames(sdrf.unique), row.names=colnames(sdrf.unique))
+  pd <- new("AnnotatedDataFrame", data=sdrf.unique, varMetadata=varmetadata)
+  eSet.processed <- new("ExpressionSet", exprs=geneex, phenoData=pd, annotation=annotation(eSet.orig))
+  ## save expression set to rdata
+  eSetName <- sprintf("eSet.%s",identifier)
+  assign(eSetName, eSet.processed)
+  save(list=c(eSetName), file=file.path(sourcedir,sprintf("%s.rda",eSetName)))
+  message(sprintf("sucessfully saved full processed %s data to %s", identifier, eSetName))
 }
 
 
-normalize.TGGATES("E-MTAB-797", verbose=T)
+# normalize.TGGATES("E-MTAB-797", sourcedir="tmp", unzip=F,verbose=T)
