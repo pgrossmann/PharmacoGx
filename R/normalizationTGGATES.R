@@ -1,13 +1,13 @@
 
 #' @param identifier [character] accession number in Array Express
-#' @param tmp [character] directory to work in (download, etc.) and output results
+#' @param outdidr [character] directory to work in (download, etc.) and output results
 #' @param unzip [logical] if downloaded zip files are required to be unzipped
 #' @param sourcedir [character] path to local sourcedir, if data has been downloaded already, 
 #' or NULL otherwise
 #' @param verbose [logical] print additional processing information
 #' @param resultPref [character] prefix or result file. will be appended by ".rda"
 #' @param return [ExpressionSet] expression set object, this object is named <resultPref>
-normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NULL, 
+normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",identifier), unzip=TRUE, sourcedir=NULL, 
   verbose=FALSE, resultPref=sprintf("%s.eSet",identifier)) {
   #-----------------------------------------------------------------
   ### setup code
@@ -15,6 +15,10 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   
   require(ArrayExpress) # for getAE and Biobase 
   require(rat2302.db)
+  require(hgu133plus2.db)
+  
+  ### global variables ###
+  resultPref <- gsub("-","",resultPref)
   
   ### aux. functions ###
   
@@ -62,13 +66,13 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
     pVerbose("will be reading data from sourcedir")
     local <- TRUE # if data has been downloaded already
   } else {
-    pVerbose("will download data to tmpdir")
-    sourcedir <- tmpdir
-      # tmpdir
+    pVerbose("will download data to outdir")
+    sourcedir <- outdir
+      # outdir
     if (!file.exists(sourcedir)) dir.create(sourcedir)
   }
   
-  # don't use tmpdir from here on #
+  # don't use outdir from here on #
   
   ## download data if not done yet ##
   pVerbose("processing raw array data")
@@ -159,7 +163,7 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   switch(identifier,
     "E-MTAB-797"=rat2302.db,
     "E-MTAB-798"=hgu133plus2.db,
-    "E-MTAB-797"=hgu133plus2.db)
+    "E-MTAB-799"=hgu133plus2.db)
   
   pVerbose("map probes to entrez gene ids")
   gids <- select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
@@ -187,7 +191,7 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   ## save expression set to rdata
   eSetName <- resultPref
   assign(eSetName, eSet.processed)
-  fullEset.fn <- file.path(sourcedir,sprintf("resultPref%s.rda"))
+  fullEset.fn <- file.path(sourcedir,sprintf("%s.rda",resultPref))
   save(list=c(eSetName), file=fullEset.fn)
   message(sprintf("sucessfully saved full processed %s data to %s", identifier, fullEset.fn))
   get(eSetName) # return eSet
