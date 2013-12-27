@@ -5,7 +5,10 @@
 #' @param sourcedir [character] path to local sourcedir, if data has been downloaded already, 
 #' or NULL otherwise
 #' @param verbose [logical] print additional processing information
-normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NULL, verbose=FALSE) {
+#' @param resultPref [character] prefix or result file. will be appended by ".rda"
+#' @param return [ExpressionSet] expression set object, this object is named <resultPref>
+normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NULL, 
+  verbose=FALSE, resultPref=sprintf("%s.eSet",identifier)) {
   #-----------------------------------------------------------------
   ### setup code
   #-----------------------------------------------------------------
@@ -24,10 +27,26 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
     samples[1, , drop=F]
   }
   
-  #' @param sdrf [data.frame/table] full phenotype table (sdrf file)
+  #' DEAL with duplicate samples.
+  #'
+  #' @param phenotable [data.frame/table] full phenotype table (sdrf file)
   #' @param return [data.frame/table] subset of phenotype table without duplicates
-  duplicate.sdrf <- function(sdrf) {
-    sdrf[!duplicated(sdrf[,"Source.Name"]), , drop=F]
+  duplicate.pheno <- function(phenotable) {
+    phenotable[!duplicated(phenotable[,"Source.Name"]), , drop=F]
+  }
+  
+  #' TODO: insource from below
+  #' DEAL with duplicate genes.
+  #'
+  duplicate.genes <- function(geneexpressions) {
+  
+  }
+  
+  #' TODO: insource from below
+  #' PERFORM mapping
+  #'
+  map.genes <- function(probelist,identifier) {
+  
   }
   
   #-----------------------------------------------------------------
@@ -66,6 +85,7 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   pVerbose("meta data file names:")
   sapply(c(adfNames, sdrfNames, idfNames), function(x) pVerbose(x))
   
+  ## check if meta file names make sense
   stopifnot(sapply(c(adfNames, sdrfNames, idfNames), length) == 1)
   
   adf <- file.path(sourcedir, adfNames)
@@ -123,28 +143,30 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   ## curate phenotype data ##
   
   pVerbose("remove phenotype duplicates")
-  sdrf.unique <- duplicate.sdrf(sdrf)
-  rownames(sdrf.unique) <- sdrf.unique[,"Source.Name"] # check if really unique
-  print(sprintf("%s duplicate sample names have been removed",nrow(sdrf)-nrow(sdrf.unique)))
+  pheno.unique <- duplicate.pheno(pheno)
+  rownames(pheno.unique) <- pheno.unique[,"Source.Name"] # check if really unique
+  print(sprintf("%s duplicate sample(s) names have been removed",nrow(pheno)-nrow(pheno.unique)))
   # keep unique expressions
-  geneex <- geenex[,sdrf.unique[,"Array.Data.File"]]
+  geneex <- geneex[,pheno.unique[,"Array.Data.File"]]
   # assign better phenotype labels to expression data
   colnames(geneex) <- 
-  sdrf.unique[match(colnames(geneex),sdrf.unique[,"Array.Data.File"]),"Source.Name"]
+  pheno.unique[match(colnames(geneex),pheno.unique[,"Array.Data.File"]),"Source.Name"]
   
   ## map probes to gene IDs ##
   
   pVerbose("chose chip database")
   db <-
   switch(identifier,
-    "E-MTAB-797"=rat2302.db)
+    "E-MTAB-797"=rat2302.db,
+    "E-MTAB-798"=hgu133plus2.db,
+    "E-MTAB-797"=hgu133plus2.db)
   
   pVerbose("map probes to entrez gene ids")
   gids <- select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
   
   ## remove probes not matchable to gene id
   gids.fullmatched <- gids[!is.na(gids[,"ENTREZID"]), , drop=F]
-  print(sprintf("%s probes did not match a entrez gene and were removed",nrow(gids)-nrow(gids.fullmatched)))
+  print(sprintf("%s probes did not match an entrez gene and were removed",nrow(gids)-nrow(gids.fullmatched)))
   
   ## select unique genes
   pVerbose("select unique genes")
@@ -152,21 +174,23 @@ normalize.TGGATES <- function(identifier, tmpdir="tmp", unzip=TRUE, sourcedir=NU
   names(probes2gids) <- gids.fullmatched[,"PROBEID"]
   pVerbose("geneid.map(probes2gids,t(geneex),probes2gids) performed")
   geneMapResults <- genefu::geneid.map(probes2gids,t(geneex),probes2gids)
-  gids.fullmatched.unique <- geneMapResults$geneid1
-  print(sprintf("Of %s probes, %s were unique genes were selected", length(probes2ids), length(gids.fullmatched.unique)))
+  gids.fullmatched.unique <- geneMapResults$geneid1[!is.na(geneMapResults$geneid1)]
+  print(sprintf("Of %s probes, %s were unique entrez genes were selected", length(probes2gids), length(gids.fullmatched.unique)))
   
   ## assign gene ids to expression data and subset accordingly ##
   pVerbose("subsetting expression data")
   geneex <- geneex[names(gids.fullmatched.unique),]
   pVerbose("creating expression set with full annotation")
-  varmetadata <- data.frame(labelDescription=colnames(sdrf.unique), row.names=colnames(sdrf.unique))
-  pd <- new("AnnotatedDataFrame", data=sdrf.unique, varMetadata=varmetadata)
+  varmetadata <- data.frame(labelDescription=colnames(pheno.unique), row.names=colnames(pheno.unique))
+  pd <- new("AnnotatedDataFrame", data=pheno.unique, varMetadata=varmetadata)
   eSet.processed <- new("ExpressionSet", exprs=geneex, phenoData=pd, annotation=annotation(eSet.orig))
   ## save expression set to rdata
-  eSetName <- sprintf("eSet.%s",identifier)
+  eSetName <- resultPref
   assign(eSetName, eSet.processed)
-  save(list=c(eSetName), file=file.path(sourcedir,sprintf("%s.rda",eSetName)))
-  message(sprintf("sucessfully saved full processed %s data to %s", identifier, eSetName))
+  fullEset.fn <- file.path(sourcedir,sprintf("resultPref%s.rda"))
+  save(list=c(eSetName), file=fullEset.fn)
+  message(sprintf("sucessfully saved full processed %s data to %s", identifier, fullEset.fn))
+  get(eSetName) # return eSet
 }
 
 
