@@ -73,10 +73,10 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   
   if (!is.null(sourcedir)) {
     if (!file.exists(sourcedir)) stop("sourcedir does not exist!")
-    pVerbose("will be reading data from sourcedir")
+    pVerbose(sprintf("will be reading data from sourcedir %s", sourcedir))
     local <- TRUE # if data has been downloaded already
   } else {
-    pVerbose("will download data to outdir")
+    pVerbose(sprintf("will download data to outdir %s", outdir))
     sourcedir <- outdir
       # outdir
     if (!file.exists(sourcedir)) dir.create(sourcedir)
