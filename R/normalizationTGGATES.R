@@ -123,7 +123,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
     ## this is kind of messy! but cannot be avoided as justRMA prepends getwd()....
     wd <- getwd() # use this to set and unset wd
     tryCatch({
-        setwd(sourcedir)
+        setwd(sourcedir) # go to sourcedir because justRMA prepends getwd()
         eSet.orig <- affy::justRMA(filenames=celNames)
       },
       error=function(e) {
@@ -152,7 +152,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   print(sprintf("%s duplicate sample(s) names have been removed",nrow(pheno)-nrow(pheno.unique)))
   # keep unique expressions
   geneex <- geneex[,pheno.unique[,"Array.Data.File"]]
-  # assign better phenotype labels to expression data
+  # assign sample phenotype labels to expression data instead of CEL file names
   colnames(geneex) <- 
   pheno.unique[match(colnames(geneex),pheno.unique[,"Array.Data.File"]),"Source.Name"]
   
@@ -163,7 +163,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   switch(identifier,
     "E-MTAB-797"=rat2302.db,
     "E-MTAB-798"=hgu133plus2.db,
-    "E-MTAB-799"=hgu133plus2.db)
+    "E-MTAB-799"=rat2302.db)
   
   pVerbose("map probes to entrez gene ids")
   gids <- select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
@@ -177,13 +177,15 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   probes2gids <- gids.fullmatched[,"ENTREZID"]
   names(probes2gids) <- gids.fullmatched[,"PROBEID"]
   pVerbose("geneid.map(probes2gids,t(geneex),probes2gids) performed")
-  geneMapResults <- genefu::geneid.map(probes2gids,t(geneex),probes2gids)
-  gids.fullmatched.unique <- geneMapResults$geneid1[!is.na(geneMapResults$geneid1)]
+  geneMapResults <- genefu::geneid.map(probes2gids,t(geneex),probes2gids) # performs unique mapping
+  gids.fullmatched.unique <- geneMapResults$geneid1[!is.na(geneMapResults$geneid1)] # named vector (names are probe IDs) of gene IDs
   print(sprintf("Of %s probes, %s were unique entrez genes were selected", length(probes2gids), length(gids.fullmatched.unique)))
   
   ## assign gene ids to expression data and subset accordingly ##
-  pVerbose("subsetting expression data")
+  pVerbose("subsetting expression data") # by sample IDs
   geneex <- geneex[names(gids.fullmatched.unique),]
+  idNames <- paste0("geneid.", gids.fullmatched.unique) # use gene IDs instead of probe IDs
+  rownames(geneex) <- idNames
   pVerbose("creating expression set with full annotation")
   varmetadata <- data.frame(labelDescription=colnames(pheno.unique), row.names=colnames(pheno.unique))
   pd <- new("AnnotatedDataFrame", data=pheno.unique, varMetadata=varmetadata)
