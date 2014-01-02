@@ -1,3 +1,13 @@
+###########################################################################################
+###
+### Function to download, normalize, and curate TGGATES data sets
+###
+### Author: Patrick Grossmann, patrick@jimmy.harvard.edu, pgrossmann@github.com
+###
+### Jan 2, 2014
+###
+############################################################################################
+
 
 #' @param identifier [character] accession number in Array Express
 #' @param outdidr [character] directory to work in (download, etc.) and output results
