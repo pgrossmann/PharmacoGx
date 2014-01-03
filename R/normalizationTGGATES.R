@@ -26,6 +26,8 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   require(ArrayExpress) # for getAE and Biobase 
   require(rat2302.db)
   require(hgu133plus2.db)
+  require(BufferedMatrixMethods) # rma
+  require(affyio) # for BufferedMatrix.justRMA() (bug in BufferedMatrix.justRMA ?)
   
   ### global variables ###
   resultPref <- gsub("-","",resultPref)
@@ -134,10 +136,12 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
     wd <- getwd() # use this to set and unset wd
     tryCatch({
         setwd(sourcedir) # go to sourcedir because justRMA prepends getwd()
-        eSet.orig <- affy::justRMA(filenames=celNames)
+        #eSet.orig <- affy::justRMA(filenames=celNames)
+        eSet.orig <- BufferedMatrixMethods::BufferedMatrix.justRMA(filenames=celNames)
       },
       error=function(e) {
         setwd(wd)
+        print(e)
         stop("something wrong with a CEL file!!")
       }
     )
