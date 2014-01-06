@@ -19,6 +19,18 @@
 `corWeighted` <- 
 function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "greater", "less"), permutation.test=FALSE, nperm=1000, nthread=1, setseed, na.rm=FALSE) {
  
+  ######################
+  
+  wcor <- function (d, w, na.rm=TRUE) {
+    s <- sum(w, na.rm=na.rm)
+    m1 <- sum(d[ , 1L] * w, na.rm=na.rm) / s
+    m2 <- sum(d[ , 2L] * w, na.rm=na.rm) / s
+    res <- (sum(d[ , 1L] * d[ , 2L] * w, na.rm=na.rm) / s - m1 * m2) / sqrt((sum(d[ , 1L]^2 * w, na.rm=na.rm) / s - m1^2) * (sum(d[ , 2L]^2 * w, na.rm=na.rm) / s - m2^2))
+    return (res)
+  }
+  
+  ######################
+  
   if (missing(w)) { w <- rep(1, length(x)) / length(x) }
   if (length(x) != length(y) || length(x) != length(w)) { stop("x, y, and w must have the same length") }
   method <- match.arg(method)
@@ -27,14 +39,6 @@ function (x, y, w, method=c("pearson", "spearman"), alternative=c("two.sided", "
     y <- rank(y)
   }
   alternative <- match.arg(alternative)
-  
-  wcor <- function (d, w) {
-    s <- sum(w)
-    m1 <- sum(d[, 1L] * w)/s
-    m2 <- sum(d[, 2L] * w)/s
-    res <- (sum(d[, 1L] * d[, 2L] * w)/s - m1 * m2)/sqrt((sum(d[, 1L]^2 * w)/s - m1^2) * (sum(d[, 2L]^2 * w)/s - m2^2))
-    return(res)
-  }
   
   ## remove missing values
   ccix <- complete.cases(x, y, w)
