@@ -18,8 +18,8 @@
 ##			- single.type: Should the statitsics be computed for each cell/tissue type separately?
 ##      - nthread: number of parallel threads (bound to the maximum number of cores available)
 ##
-## outputs, a list of 2 items:
-##			- meta: a data.frame including the statistics (standardidzed mean difference Hedges' g, its standard error, sample size for class 1 and class 2, p-value, p-value for heterogeneity between type lines and probe annotations)
+## outputs:
+## list of datafraes with the statistics for each gene, for each type
 ##			- list of data.frame with similar results for each type line separately if any
 ##
 ## Notes:	duration is not taken into account as only 4 perturbations lasted 12h, the other 6096 lasted 6h
