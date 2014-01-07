@@ -48,7 +48,7 @@ geneDrugPerturbation <- function(x, concentration, type, batch, model=FALSE) {
   names(tt) <- nc
   ## add tissue type/cell line statistics
   if(length(sort(unique(type))) > 1) {
-    rr <- summary(rr0)
+    rr <- summary(mm0)
     ttype <- c("type.fstat"=rr$fstatistic["value"], "type.pvalue"=pf(q=rr$fstatistic["value"], df1=rr$fstatistic["numdf"], df2=rr$fstatistic["dendf"], lower.tail=FALSE))
     names(ttype) <- c("type.fstat", "type.pvalue")
   } else { ttype <- c("type.fstat"=NA, "type.pvalue"=NA) }
