@@ -29,16 +29,16 @@ function (data, drugpheno, type, batch, single.type=FALSE, nthread=1, verbose=FA
       nthread <- availcore
     }
   }
-  if (missing(type)) {
+  if (missing(type) || all(is.na(type))) {
     type <- array("other", dim=nrow(data), dimnames=list(rownames(data)))
+  }
+  if (missing(batch) || all(is.na(batch))) {
+    batch <- array(1, dim=nrow(data), dimnames=list(rownames(data)))
   }
 	if (any(c(length(drugpheno), length(type), length(batch)) != nrow(data))) {
     stop("length of drugpheno, type, and batch should be equal to the number of rows of data!")
   }
-	names(drug.id) <- names(drug.concentration) <- names(type) <- names(batch) <- rownames(data)
-	if (!all(complete.cases(type, xp, batch))) {
-    stop("type and batch parameters should not contain missing values!")
-  }
+	names(drugpheno) <- names(type) <- names(batch) <- rownames(data)
   
   res <- NULL
   utype <- sort(unique(as.character(type)))
@@ -54,7 +54,7 @@ function (data, drugpheno, type, batch, single.type=FALSE, nthread=1, verbose=FA
     ccix <- complete.cases(data[iix, , drop=FALSE], drugpheno[iix], type[iix], batch[iix])
     if (sum(ccix) < 3) {
       ## not enough experiments
-      rest <- matrix(NA, nrow=nrow(data), ncol=length(nc), dimnames=list(rownames(data), nc))
+      rest <- list(matrix(NA, nrow=nrow(data), ncol=length(nc), dimnames=list(rownames(data), nc)))
     } else {
       splitix <- parallel::splitIndices(nx=ncol(data), ncl=nthread)
       splitix <- splitix[sapply(splitix, length) > 0]
