@@ -269,7 +269,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   colnames(dd) <- colnames(drugpheno)
   newlev <- sapply(drugpheno, levels)
   newlev$cell_id <- cellnall
-  dd <- setcolclass.df(df=dd, colclass=sapply(drugpheno, class), factor.levels=newlev)
+  dd <- genefu::setcolclass.df(df=dd, colclass=sapply(drugpheno, class), factor.levels=newlev)
   dd[rownames(drugpheno),colnames(drugpheno)] <- drugpheno
   dd[ ,"cell_id"] <- cellnall
   drugpheno <- dd
@@ -316,7 +316,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   druginfo2 <- data.frame(matrix(NA, nrow=length(dix), ncol=ncol(druginfo), dimnames=list(dix, colnames(druginfo))))
   newlev <- sapply(druginfo, levels)
   newlev$drug_id <- sapply(strsplit(dix, split="_"), function(x) { return(x[2]) })
-  druginfo2 <- setcolclass.df(df=druginfo2, colclass=sapply(druginfo, class), factor.levels=newlev)
+  druginfo2 <- genefu::setcolclass.df(df=druginfo2, colclass=sapply(druginfo, class), factor.levels=newlev)
   druginfo2[match(rownames(druginfo), dix), colnames(druginfo)] <- druginfo
   druginfo2[ , "drug_id"] <- newlev$drug_id
   druginfo <- druginfo2
@@ -324,7 +324,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   drugconc2 <- data.frame(matrix(NA, nrow=length(dix), ncol=ncol(drugconc), dimnames=list(dix, colnames(drugconc))))
   newlev <- sapply(drugconc, levels)
   newlev$drug_id <- sapply(strsplit(dix, split="_"), function(x) { return(x[2]) })
-  drugconc2 <- setcolclass.df(df=drugconc2, colclass=sapply(drugconc, class), factor.levels=newlev)
+  drugconc2 <- genefu::setcolclass.df(df=drugconc2, colclass=sapply(drugconc, class), factor.levels=newlev)
   drugconc2[match(rownames(drugconc), dix), colnames(drugconc)] <- drugconc
   drugconc2[ , "drug_id"] <- newlev$drug_id
   drugconc <- drugconc2

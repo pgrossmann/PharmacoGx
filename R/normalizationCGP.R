@@ -275,7 +275,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
     dd <- data.frame(matrix(NA, ncol=ncol(drugpheno), nrow=length(cellnall), dimnames=list(cellnall, colnames(drugpheno))))
     newlev <- sapply(drugpheno, levels)
     newlev$cellid <- cellnall
-    dd <- setcolclass.df(df=dd, colclass=sapply(drugpheno, class), factor.levels=newlev)
+    dd <- genefu::setcolclass.df(df=dd, colclass=sapply(drugpheno, class), factor.levels=newlev)
     dd[rownames(drugpheno),colnames(drugpheno)] <- drugpheno
     dd[ ,"cellid"] <- cellnall
     drugpheno <- dd
@@ -312,7 +312,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
     druginfo2 <- data.frame(matrix(NA, nrow=length(dix), ncol=ncol(druginfo), dimnames=list(dix, colnames(druginfo))))
     newlev <- sapply(druginfo, levels)
     newlev$drugid <- sapply(strsplit(dix, split="_"), function(x) { return(x[2]) })
-    druginfo2 <- setcolclass.df(df=druginfo2, colclass=sapply(druginfo, class), factor.levels=newlev)
+    druginfo2 <- genefu::setcolclass.df(df=druginfo2, colclass=sapply(druginfo, class), factor.levels=newlev)
     druginfo2[match(rownames(druginfo), dix), colnames(druginfo)] <- druginfo
     druginfo2[ , "drugid"] <- newlev$drugid
     druginfo <- druginfo2
@@ -320,7 +320,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
     drugconc2 <- data.frame(matrix(NA, nrow=length(dix), ncol=ncol(drugconc), dimnames=list(dix, colnames(drugconc))))
     newlev <- sapply(drugconc, levels)
     newlev$drugid <- sapply(strsplit(dix, split="_"), function(x) { return(x[2]) })
-    drugconc2 <- setcolclass.df(df=drugconc2, colclass=sapply(drugconc, class), factor.levels=newlev)
+    drugconc2 <- genefu::setcolclass.df(df=drugconc2, colclass=sapply(drugconc, class), factor.levels=newlev)
     drugconc2[match(rownames(drugconc), dix), colnames(drugconc)] <- drugconc
     drugconc2[ , "drugid"] <- newlev$drugid
     drugconc <- drugconc2

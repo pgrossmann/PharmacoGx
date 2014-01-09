@@ -131,7 +131,7 @@ function () {
 
     	## intersection between filenames and sampleinfo data
     	tt <- data.frame(matrix(NA, nrow=length(celfn), ncol=ncol(sampleinfo), dimnames=list(names(celfn), colnames(sampleinfo))), stringsAsFactors=FALSE)
-    	tt <- setcolclass.df(df=tt, colclass=sapply(sampleinfo, class), factor.levels=sapply(sampleinfo, levels))
+    	tt <- genefu::setcolclass.df(df=tt, colclass=sapply(sampleinfo, class), factor.levels=sapply(sampleinfo, levels))
     	myx <- intersect(names(celfn), rownames(sampleinfo))
     	if(length(myx) < nrow(sampleinfo)) { stop("some CEL files are absent!") }
     	tt[myx, ] <- sampleinfo[myx, , drop=FALSE]
