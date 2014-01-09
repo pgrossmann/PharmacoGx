@@ -33,7 +33,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
     i <- 1
     while(i <= 9) {
       ## assuming there are only 9 zip archives (need to check if the update version has more)
-     dwl.status <- download.file(url=sprintf("%s/E-MTAB-783.raw.%i.zip", ftpdir, i), destfile=file.path(tmpdir, sprintf("E-MTAB-783.raw.%i.zip", i)))
+     dwl.status <- download.file(url=sprintf("%s/E-MTAB-783.raw.%i.zip", ftpdir, i), destfile=file.path(tmpdir, sprintf("E-MTAB-783.raw.%i.zip", i)), method="curl")
      if(dwl.status != 0) {
        message("\t-> download failed, let's try again ...")
        file.remove(file.path(tmpdir, sprintf("E-MTAB-783.raw.%i.zip", i)))
@@ -61,7 +61,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
   myfn <- file.path(tmpdir, "E-MTAB-783.sdrf.txt")
   if(!file.exists(myfn)) {
     message("\nDownload sample information\n")
-    dwl.status <- download.file(url=sprintf("%s/E-MTAB-783.sdrf.txt", ftpdir), destfile=myfn)
+    dwl.status <- download.file(url=sprintf("%s/E-MTAB-783.sdrf.txt", ftpdir), destfile=myfn, method="curl")
     if(dwl.status != 0) { stop("Download failed, please rerun the pipeline!") }
     file.copy(from=file.path(tmpdir, "E-MTAB-783.sdrf.txt"), to=file.path(rawdir, "E-MTAB-783.sdrf.txt"))
   }
@@ -70,7 +70,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
   myfn <- file.path(tmpdir, "gdsc_manova_input_w2.csv")
   if(!file.exists(myfn)) {
     message("\nDownload drug sensitivity measurements\n")
-    dwl.status <- download.file(url="ftp://ftp.sanger.ac.uk/pub4/cancerrxgene/releases/release-2.0/gdsc_manova_input_w2.csv", destfile=myfn)
+    dwl.status <- download.file(url="ftp://ftp.sanger.ac.uk/pub4/cancerrxgene/releases/release-2.0/gdsc_manova_input_w2.csv", destfile=myfn, method="curl")
     if(dwl.status != 0) { stop("Download failed, please rerun the pipeline!") }
     file.copy(from=file.path(tmpdir, "gdsc_manova_input_w2.csv"), to=file.path(rawdir, "cgp_drug_sensitivity.csv"))
   }
@@ -79,7 +79,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
   myfn <- file.path(tmpdir, "gdsc_compounds_conc_w2.csv")
   if(!file.exists(myfn)) {
     message("\nDownload screening drug concentrations\n")
-    dwl.status <- download.file(url="ftp://ftp.sanger.ac.uk/pub4/cancerrxgene/current_release/gdsc_compounds_conc_w2.csv", destfile=myfn)
+    dwl.status <- download.file(url="ftp://ftp.sanger.ac.uk/pub4/cancerrxgene/current_release/gdsc_compounds_conc_w2.csv", destfile=myfn, method="curl")
     if(dwl.status != 0) { stop("Download failed, please rerun the pipeline!") }
     file.copy(from=file.path(tmpdir, "gdsc_compounds_conc_w2.csv"), to=file.path(rawdir, "cgp_drug_concentration.csv"))
   }
@@ -90,7 +90,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
   myfn <- file.path(tmpdir, "celline_annotations.RData")
   if(!file.exists(myfn)) {
     message("\nDownload cell lines annotations\n")
-    dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/CosmicCellLineProject_%s.tsv.gz", dda), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)))
+    dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/CosmicCellLineProject_%s.tsv.gz", dda), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)), method="curl")
     if(dwl.status != 0) { stop("Download failed, please rerun the pipeline! It may be that there is a new version of the file CosmicCellLineProject, please look at ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/ and update the script accordingly ...") }
     ## untar
     res <- R.utils::gunzip(filename=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)), overwrite=TRUE)
@@ -119,7 +119,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
     rownames(tt) <- tt[ , "Sample.name"]
     celline.cosmic <- tt
     ## annotations from GDSC (Genomics of Drug Sensitivity in Cancer)
-    dwl.status <- download.file(url="ftp://ftp.sanger.ac.uk/pub4/cancerrxgene/current_release/gdsc_cell_lines_w2.csv", destfile=file.path(tmpdir, "gdsc_cell_lines_w2.csv"))
+    dwl.status <- download.file(url="ftp://ftp.sanger.ac.uk/pub4/cancerrxgene/current_release/gdsc_cell_lines_w2.csv", destfile=file.path(tmpdir, "gdsc_cell_lines_w2.csv"), method="curl")
     file.copy(from=file.path(tmpdir, "gdsc_cell_lines_w2.csv"), to=file.path(rawdir, "cgp_celline_collection.csv"))
     if(dwl.status != 0) { stop("Download failed, please rerun the pipeline!") }
     celline.gdsc <- read.csv(file=file.path(rawdir, "cgp_celline_collection.csv"), stringsAsFactors=FALSE)
@@ -142,7 +142,7 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
   myfn <- file.path(tmpdir, "nature11005-s2.zip")
   if(!file.exists(myfn)) {
     message("\nDownload drug information\n")
-    dwl.status <- download.file(url="http://www.nature.com/nature/journal/v483/n7391/extref/nature11005-s2.zip", destfile=myfn)
+    dwl.status <- download.file(url="http://www.nature.com/nature/journal/v483/n7391/extref/nature11005-s2.zip", destfile=myfn, method="curl")
     if(dwl.status != 0) { stop("Download failed, please rerun the script!") }
   }
   ff <- as.character(unzip(zipfile=file.path(tmpdir, "nature11005-s2.zip"), list=TRUE)[1, 1])
