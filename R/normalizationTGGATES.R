@@ -191,7 +191,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   probes2gids <- gids.fullmatched[,"ENTREZID"]
   names(probes2gids) <- gids.fullmatched[,"PROBEID"]
   pVerbose("geneid.map(probes2gids,t(geneex),probes2gids) performed")
-  geneMapResults <- genefu::geneid.map(probes2gids,t(geneex),probes2gids) # performs unique mapping
+  geneMapResults <- genefu::geneid.map(probes2gids,t(geneex)[,names(probes2gids)],probes2gids) # performs unique mapping
   gids.fullmatched.unique <- geneMapResults$geneid1[!is.na(geneMapResults$geneid1)] # named vector (names are probe IDs) of gene IDs
   print(sprintf("Of %s probes, %s were unique entrez genes were selected", length(probes2gids), length(gids.fullmatched.unique)))
   
