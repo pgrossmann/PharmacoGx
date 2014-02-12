@@ -208,7 +208,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   eSetName <- resultPref
   assign(eSetName, eSet.processed)
   fullEset.fn <- file.path(sourcedir,sprintf("%s.rda",resultPref))
-  save(list=c(eSetName), file=fullEset.fn)
+  save(list=c(eSetName), file=fullEset.fn, compress=TRUE)
   message(sprintf("sucessfully saved full processed %s data to %s", identifier, fullEset.fn))
   get(eSetName) # return eSet
 }
