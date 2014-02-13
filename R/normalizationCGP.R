@@ -7,7 +7,7 @@
 #	Normalize and import all data from Connectivity Map
 
 `normalizationCGP` <- 
-function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_241013", nthread=1, downloadMethod="curl") {
+function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v68", nthread=1, downloadMethod="curl") {
   
   ## number of cores for parallel processing
   nbcore <- nthread
@@ -90,7 +90,9 @@ function (datadir=file.path("data", "CGP"), tmpdir="tmp", cosmic.version="v67_24
   myfn <- file.path(tmpdir, "celline_annotations.RData")
   if(!file.exists(myfn)) {
     message("\nDownload cell lines annotations\n")
-    dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/CosmicCellLineProject_%s.tsv.gz", dda), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)), method=downloadMethod)
+    # ftp://ftp.sanger.ac.uk/pub/CGP/cell_lines_project/data_export/
+#     dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/CosmicCellLineProject_%s.tsv.gz", dda), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)), method=downloadMethod)
+dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cell_lines_project/data_export/CosmicCellLineProject_%s.tsv.gz", dda), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)), method=downloadMethod)
     if(dwl.status != 0) { stop("Download failed, please rerun the pipeline! It may be that there is a new version of the file CosmicCellLineProject, please look at ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/ and update the script accordingly ...") }
     ## untar
     res <- R.utils::gunzip(filename=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", dda)), overwrite=TRUE)
