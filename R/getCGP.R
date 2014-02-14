@@ -11,7 +11,7 @@
 #################################################
 
 `getCGP` <- 
-function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE, cosmic.version="v67_241013", 
+function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE, cosmic.version="v68", 
   replicates=c("last", "first", "all", "mean", "median"), verbose=FALSE, downloadMethod="curl") {
 
   replicates <- match.arg(replicates)
@@ -120,7 +120,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
     rownames(celline.gdsc) <- celline.gdsc[ , "CELL_LINE_NAME"]
     ## annotations from COSMIC
     if (cosmic.annotation) {
-      dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/CosmicCellLineProject_%s.tsv.gz", cosmic.version), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", cosmic.version)), method=downloadMethod)
+      dwl.status <- download.file(url=sprintf("ftp://ftp.sanger.ac.uk/pub/CGP/cell_lines_project/data_export/CosmicCellLineProject_%s.tsv.gz", cosmic.version), destfile=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", cosmic.version)), method=downloadMethod)
       if(dwl.status != 0) { stop("Download failed, please rerun the pipeline! It may be that there is a new version of the file CosmicCellLineProject, please look at ftp://ftp.sanger.ac.uk/pub/CGP/cosmic/data_export/ and update the script accordingly ...") }
       ## untar
       res <- R.utils::gunzip(filename=file.path(tmpdir, sprintf("CosmicCellLineProject_%s.tsv.gz", cosmic.version)), overwrite=TRUE)
