@@ -270,6 +270,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   colnames(dd) <- colnames(drugpheno)
   newlev <- sapply(drugpheno, levels)
   newlev$cell_id <- cellnall
+  ## genefu::setcolclass.df is NOT in the Bioconductor package, but in the package on github (https://github.com/bhaibeka/genefu/blob/master/R/setcolclass.df.R)
   dd <- genefu::setcolclass.df(df=dd, colclass=sapply(drugpheno, class), factor.levels=newlev)
   dd[rownames(drugpheno),colnames(drugpheno)] <- drugpheno
   dd[ ,"cell_id"] <- cellnall

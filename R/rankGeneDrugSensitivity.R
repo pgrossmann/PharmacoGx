@@ -48,7 +48,8 @@ function (data, drugpheno, type, batch, single.type=FALSE, nthread=1, verbose=FA
     names(ltype)[-1] <- utype
   }
   res <- NULL
-  nc <- c("estimate", "pvalue", "fdr")
+#   nc <- c("estimate", "pvalue", "fdr")
+  nc <- c("estimate", "se", "n", "tstat", "fstat", "pvalue", "fdr")
   for (ll in 1:length(ltype)) {
     iix <- !is.na(type) & is.element(type, ltype[[ll]])
     ccix <- complete.cases(data[iix, , drop=FALSE], drugpheno[iix], type[iix], batch[iix])
