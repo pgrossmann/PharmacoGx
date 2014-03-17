@@ -64,12 +64,24 @@ function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
     "tissue.type"=c("haematopoietic_and_lymphoid_tissue", "breast", "prostate", "skin", "breast"))
   rownames(celline) <- as.character(celline[ , "cell_id"])
   
-  ## get drug infomration
+  ## get drug information
   tt <- Biobase::pData(eset)[ , c("drug_id", "cmap_name")]
   tt <- tt[!is.na(tt[ , "drug_id"]) & !duplicated(tt[ , "drug_id"]), , drop=FALSE]
   tt <- tt[!is.na(tt[ , "drug_id"]) & tt[ , "drug_id"] != "NA", , drop=FALSE]
   rownames(tt) <- as.character(tt[ , "drug_id"])
   druginfo <- tt
+  ## ChemBank identifiers (CBID) provided by Justin Lamb
+  tt <- read.csv(file.path(system.file("extdata", package="PharmacoGx"), "cmap_CBID_Lamb.csv"), stringsAsFactors=FALSE)
+  ## WARNING: the cmap id do not correspond to the original annotations
+  # rownames(tt) <- paste("drug_cmap", tt[ , "cmap_name_id"], sep=".")
+  myx <- match(druginfo[ , "cmap_name"], tt[ , "cmap_name"])
+  druginfo <- data.frame(druginfo, "ChemBank.id"=tt[myx, "CBID"], stringsAsFactors=FALSE)
+  ## gather drug information from the CMAP website
+  # http://www.broadinstitute.org/cmap/cmap_instances_02.xls
+  tt <- gdata::read.xls(file.path(system.file("extdata", package="PharmacoGx"), "cmap_instances_02.xls"), stringsAsFactors=FALSE)
+  tt <- tt[!is.na(tt[ , "cmap_name"]) & !duplicated(tt[ , "cmap_name"]), c("cmap_name", "vendor", "catalog_number", "catalog_name")]
+  myx <- match(druginfo[ , "cmap_name"], tt[ , "cmap_name"])
+  druginfo <- data.frame(druginfo, tt[myx, -1, drop=FALSE], stringsAsFactors=FALSE)
   
   ## get concentrations for each drugs
   tt <- table(Biobase::pData(eset)[ , "drug_id"], Biobase::pData(eset)[ , "concentration_M"])
