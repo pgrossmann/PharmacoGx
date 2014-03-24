@@ -4,7 +4,7 @@
 ###
 ### Author: Patrick Grossmann, patrick@jimmy.harvard.edu, pgrossmann@github.com/, Smisery1@github.com
 ###
-### Jan 2, 2014
+### Mar 24, 2014
 ###
 #######################################################################################################
 
@@ -177,7 +177,8 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   switch(identifier,
     "E-MTAB-797"=rat2302.db,
     "E-MTAB-798"=hgu133plus2.db,
-    "E-MTAB-799"=rat2302.db)
+    "E-MTAB-799"=rat2302.db,
+    "E-MTAB-800"=rat2302.db)
   
   pVerbose("map probes to entrez gene ids")
   gids <- select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
