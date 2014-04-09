@@ -39,7 +39,7 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
         interfold <- 0 
       }
     },
-    "aAUC" = {
+    "AUC" = {
       ylabel <- "AUC"
       ## 1.2 fold difference around Activity Area cutoff
       if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[2] }
