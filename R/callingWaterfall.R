@@ -27,7 +27,7 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
   if (is.null(names(x))) { names(x) <- paste("X", 1:length(x), sep=".") }
   
   xx <- x[complete.cases(x)]
-  if (length(x) < 3) {
+  if (length(xx) < 3) {
     tt <- array(NA, dim=length(x), dimnames=list(names(x)))
     if (intermediate.fold == 0) {
       calls <- factor(tt, levels=c("resistant", "sensitive"))
