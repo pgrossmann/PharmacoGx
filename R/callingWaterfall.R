@@ -33,7 +33,11 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
       ylabel <- "-log10(IC50)"
       ## 4 fold difference around IC50 cutoff
       if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[1] }
-        if (intermediate.fold != 0) { interfold <- log10(intermediate.fold) }
+      if (intermediate.fold != 0) {
+        interfold <- log10(intermediate.fold)
+      } else { 
+        interfold <- 0 
+      }
     },
     "aAUC" = {
       ylabel <- "AUC"
