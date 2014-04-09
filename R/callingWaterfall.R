@@ -20,26 +20,35 @@
 ##  amax: Activity at max concentration (positive values)
 ##  intermediate.fold: vector of fold changes used to define the intermediate sensitivities for ic50, actarea and amax respectively
 `callingWaterfall` <- 
-function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, name="Drug", plot=FALSE) {
+function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, name="Drug", plot=FALSE) {
   
   type <- match.arg(type)
   
   if (is.null(names(x))) { names(x) <- paste("X", 1:length(x), sep=".") }
   
   xx <- x[complete.cases(x)]
+  if (lebgth(x) < 3) {
+    tt <- array(NA, dim=length(x), dimnames=list(names(x)))
+    if (intermediate.fold == 0) {
+      calls <- factor(tt, levels=c("resistant", "sensitive"))
+    } else {
+      calls <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+    }
+    return (calls)
+  }
   switch (type,
-    "ic50" = {
+    "IC50" = {
       xx <- -log10(xx)
       ylabel <- "-log10(IC50)"
       ## 4 fold difference around IC50 cutoff
       interfold <- log10(intermediate.fold[1])
     },
-    "actarea" = {
-      ylabel <- "Activity area"
+    "aAUC" = {
+      ylabel <- "AUC"
       ## 1.2 fold difference around Activity Area cutoff
       interfold <- intermediate.fold[2]
     },
-    "amax" = {
+    "AMAX" = {
       ylabel <- "Amax"
       ## 1.2 fold difference around Amax
       interfold <- intermediate.fold[3]
@@ -67,13 +76,13 @@ function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2)
   }
   ## identify intermediate sensitivities
   switch (type,
-    "ic50" = {
+    "IC50" = {
       rang <- c(xx[oo][cutoff] - interfold, xx[oo][cutoff] + interfold)
     },
-    "actarea" = {
+    "AUC" = {
      rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
     },
-    "amax" = {
+    "AMAX" = {
       rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
     }
   )
@@ -111,6 +120,7 @@ function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2)
   tt <- rep(NA, length(x))
   names(tt) <- names(x)
   tt[names(calls)] <- calls
+  tt <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
   return(tt)  
 }
 
