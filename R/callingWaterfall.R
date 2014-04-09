@@ -27,15 +27,6 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
   if (is.null(names(x))) { names(x) <- paste("X", 1:length(x), sep=".") }
   
   xx <- x[complete.cases(x)]
-  if (length(xx) < 3) {
-    tt <- array(NA, dim=length(x), dimnames=list(names(x)))
-    if (intermediate.fold == 0) {
-      calls <- factor(tt, levels=c("resistant", "sensitive"))
-    } else {
-      calls <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
-    }
-    return (calls)
-  }
   switch (type,
     "IC50" = {
       xx <- -log10(xx)
@@ -54,6 +45,17 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
       interfold <- intermediate.fold[3]
     }
   )
+  
+  if (length(xx) < 3) {
+    tt <- array(NA, dim=length(x), dimnames=list(names(x)))
+    if (interfold == 0) {
+      calls <- factor(tt, levels=c("resistant", "sensitive"))
+    } else {
+      calls <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+    }
+    return (calls)
+  }
+  
   oo <- order(xx, decreasing=TRUE)
   ## test linearity with Pearson correlation
   cc <- cor.test(-xx[oo], 1:length(oo), method="pearson")
