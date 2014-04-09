@@ -107,13 +107,29 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
       }
     }
   )
+  
+  
+  ## check whether range is either min or max
+  if (rang[2] >= max(xx)) {
+    rang[2] <- sort(unique(xx), decreasing=TRUE)[2]
+  }
+  if (rang[2] <= min(xx)) {
+    rang[2] <- sort(unique(xx), decreasing=FALSE)[2]
+  }
+  if (rang[1] <= min(xx)) {
+    rang[1] <- sort(unique(xx), decreasing=FALSE)[2]
+  }
+  if (rang[1] >= max(xx)) {
+    rang[1] <- sort(unique(xx), decreasing=TRUE)[2]
+  }
+  
   ## compute calls
   calls <- rep(NA, length(xx))
   names(calls) <- names(xx)
   calls[xx < rang[1]] <- "resistant"
   calls[xx >= rang[2]] <- "sensitive"
   calls[xx >= rang[1] & xx < rang[2]] <- "intermediate"
-      
+  
   if (plot) {
     par(mfrow=c(2, 1))
     ccols <- rainbow(4)
