@@ -23,7 +23,7 @@
 function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, name="Drug", plot=FALSE) {
   
   type <- match.arg(type)
-  
+  if (any(!is.na(intermediate.fold) & intermediate.fold < 0)) { intermediate.fold <- intermediate.fold[!is.na(intermediate.fold) & intermediate.fold < 0] <- 0 }
   if (is.null(names(x))) { names(x) <- paste("X", 1:length(x), sep=".") }
   
   xx <- x[complete.cases(x)]
@@ -32,28 +32,31 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
       xx <- -log10(xx)
       ylabel <- "-log10(IC50)"
       ## 4 fold difference around IC50 cutoff
-      interfold <- log10(intermediate.fold[1])
+      if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[1] }
+        if (intermediate.fold != 0) { interfold <- log10(intermediate.fold) }
     },
     "aAUC" = {
       ylabel <- "AUC"
       ## 1.2 fold difference around Activity Area cutoff
-      interfold <- intermediate.fold[2]
+      if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[2] }
+      interfold <- intermediate.fold
     },
     "AMAX" = {
       ylabel <- "Amax"
       ## 1.2 fold difference around Amax
-      interfold <- intermediate.fold[3]
+      if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[3] }
+      interfold <- intermediate.fold
     }
   )
   
   if (length(xx) < 3) {
     tt <- array(NA, dim=length(x), dimnames=list(names(x)))
     if (interfold == 0) {
-      calls <- factor(tt, levels=c("resistant", "sensitive"))
+      tt <- factor(tt, levels=c("resistant", "sensitive"))
     } else {
-      calls <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+      tt <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
     }
-    return (calls)
+    return (tt)
   }
   
   oo <- order(xx, decreasing=TRUE)
@@ -79,21 +82,33 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
   ## identify intermediate sensitivities
   switch (type,
     "IC50" = {
-      rang <- c(xx[oo][cutoff] - interfold, xx[oo][cutoff] + interfold)
+      if (interfold == 0) {
+        rang <- c(xx[oo][cutoff], xx[oo][cutoff])
+      } else {
+        rang <- c(xx[oo][cutoff] - interfold, xx[oo][cutoff] + interfold)
+      }
     },
     "AUC" = {
-     rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+      if (interfold == 0) {
+        rang <- c(xx[oo][cutoff], xx[oo][cutoff])
+      } else {
+        rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+      }
     },
     "AMAX" = {
-      rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+      if (interfold == 0) {
+        rang <- c(xx[oo][cutoff], xx[oo][cutoff])
+      } else {
+        rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+      }
     }
   )
   ## compute calls
   calls <- rep(NA, length(xx))
   names(calls) <- names(xx)
   calls[xx < rang[1]] <- "resistant"
-  calls[xx > rang[2]] <- "sensitive"
-  calls[xx >= rang[1] & xx <= rang[2]] <- "intermediate"
+  calls[xx >= rang[2]] <- "sensitive"
+  calls[xx >= rang[1] & xx < rang[2]] <- "intermediate"
       
   if (plot) {
     par(mfrow=c(2, 1))
@@ -122,7 +137,11 @@ function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), co
   tt <- rep(NA, length(x))
   names(tt) <- names(x)
   tt[names(calls)] <- calls
-  tt <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+  if (interfold == 0) {
+    tt <- factor(tt, levels=c("resistant", "sensitive"))
+  } else {
+    tt <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+  }
   return(tt)  
 }
 
