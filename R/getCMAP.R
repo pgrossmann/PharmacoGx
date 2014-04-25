@@ -15,12 +15,12 @@ function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
 
   std <- match.arg(std)
   
-  InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
-  # inSilicoDb2::getCurationInfo(dataset="ISDB12026")
+  InSilicoDb::InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
+  # InSilicoDb::getCurationInfo(dataset="ISDB12026")
   if (verbose) { message("Downloading the Connectivity Map dataset from InSilicoDB") }
-  platfs <- inSilicoDb2::getPlatforms(dataset="ISDB12026")
-  esets <- inSilicoDb2::getDatasets(dataset="ISDB12026", norm="FRMA", curation="24805", features="PROBE")
-  InSilicoLogout()
+  platfs <- InSilicoDb::getPlatforms(dataset="ISDB12026")
+  esets <- InSilicoDb::getDatasets(dataset="ISDB12026", norm="FRMA", curation="24805", features="PROBE")
+  InSilicoDb::InSilicoLogout()
   
   ## merge esets
   if (verbose) { message("Merging CMAP1 and CMAP2") }
