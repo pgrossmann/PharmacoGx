@@ -22,11 +22,11 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   badchars <- "[\xb5]|[]|[,]|[;]|[:]|[-]|[+]|[*]|[%]|[$]|[#]|[{]|[}]|[[]|[]]|[|]|[\\^]|[/]|[\\]|[.]|[_]|[ ]"
   
   if (verbose) { message("Downloading the genomic data of the Cancer Genome Project from InSilicoDB") }
-  InSilicoDb::InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
-  # InSilicoDb::getCurationInfo(dataset="ISDB12210")
-  platf <- InSilicoDb::getPlatforms(dataset="ISDB12210")
-  eset <- InSilicoDb::getDatasets(dataset="ISDB12210", norm="FRMA", curation="24802", features="PROBE")
-  InSilicoDb::InSilicoLogout()
+  inSilicoDb::InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
+  # inSilicoDb::getCurationInfo(dataset="ISDB12210")
+  platf <- inSilicoDb::getPlatforms(dataset="ISDB12210")
+  eset <- inSilicoDb::getDatasets(dataset="ISDB12210", norm="FRMA", curation="24802", features="PROBE")
+  inSilicoDb::InSilicoLogout()
   
   ## only one platform, may be subject to change
   platf <- platf[[1]]
