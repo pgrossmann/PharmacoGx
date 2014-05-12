@@ -11,3 +11,6 @@ pp <- c("InSilicoDb", "Biobase", "BiocGenerics", "org.Hs.eg.db", "survival", "su
 source("http://bioconductor.org/biocLite.R")
 myrepos <- biocinstallRepos()
 rr <- biocLite(pkgs=pp, dependencies=TRUE, type="source", destdir=".")
+
+Then download and install the standalone package jetset from:
+http://www.cbs.dtu.dk/biotools/jetset/current/jetset_2.14.0.tar.gz
