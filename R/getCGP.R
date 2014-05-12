@@ -357,7 +357,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   ## sensitivity calling using waterfall plot
   ic50.call <- NULL
   for(i in 1:ncol(ic50)) {
-    ic50.call <- cbind(ic50.call, callingWaterfall(x=ic50[ ,i], type="ic50", intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, plot=FALSE, name=sprintf("%s (CGP)", colnames(ic50)[i])))
+    ic50.call <- cbind(ic50.call, callingWaterfall(x=ic50[ ,i], type="IC50", intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, plot=FALSE, name=sprintf("%s (CGP)", colnames(ic50)[i])))
   }
   dimnames(ic50.call) <- dimnames(ic50)
 
