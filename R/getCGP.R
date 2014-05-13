@@ -377,7 +377,7 @@ function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE,
   ## sensitivity calling using waterfall plot
   auc.call <- NULL
   for(i in 1:ncol(auc)) {
-    auc.call <- cbind(auc.call, callingWaterfall(x=auc[ ,i], type="actarea", intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, plot=FALSE, name=sprintf("%s (CGP)", colnames(auc)[i])))
+    auc.call <- cbind(auc.call, callingWaterfall(x=auc[ ,i], type="AUC", intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, plot=FALSE, name=sprintf("%s (CGP)", colnames(auc)[i])))
   }
   dimnames(auc.call) <- dimnames(auc)
    
