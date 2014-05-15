@@ -12,7 +12,7 @@
 
 `getCGP` <- 
 function (gene=TRUE, tmpdir="tmp", delete.tmpdir=FALSE, cosmic.annotation=FALSE, cosmic.version="v68", 
-  replicates=c("last", "first", "all", "mean", "median"), verbose=FALSE, downloadMethod="curl") {
+  replicates=c("last", "first", "all", "mean", "median"), verbose=FALSE, downloadMethod="wget") {
 
   replicates <- match.arg(replicates)
   
