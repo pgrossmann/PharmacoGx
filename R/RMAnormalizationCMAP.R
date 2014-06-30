@@ -34,8 +34,8 @@ function () {
     ## read cel files data
 
     ## CEL file names
-    celfn <- list.celfiles(rawpath, full.names=TRUE)
-    celfns <- list.celfiles(rawpath, full.names=FALSE)
+    celfn <- list.files(rawpath, full.names=TRUE)
+    celfns <- list.files(rawpath, full.names=FALSE)
     ## experiments' names
     names(celfn) <- gsub(".CEL|.CEL.GZ", "", toupper(list.celfiles(rawpath)))
 
@@ -196,12 +196,12 @@ function () {
     	celfnt <- celfn[myx]
       ## rma
       datat <- affy::just.rma(filenames=celfnt, verbose=TRUE)
-      datat <- t(do.call(cbind, res))
-      rownames(datat) <- names(celfnt)
+      colnames(exprs(datat)) <- names(celfnt)
     	## rename objects
-    	data.hgu133a <- datat[rownames(sampleinfo.cmap)[myx], , drop=FALSE]
+    	data.hgu133a <- exprs(datat)[,rownames(sampleinfo.cmap)[myx] , drop=FALSE]
     	rm(list=c("datat"))
     	gc()
+    	data.hgu133a <- t(data.hgu133a)
     	save(list=c("data.hgu133a", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file="temp/cmap_hgu133a_rma.RData")
     } else { load("temp/cmap_hgu133a_rma.RData") }
     #save(list=ls(), compress=TRUE, file="ws.RData")
@@ -219,12 +219,12 @@ function () {
     	celfnt <- celfn[myx]
     	## rma
     	datat <- affy::just.rma(filenames=celfnt, verbose=TRUE)
-    	datat <- t(do.call(cbind, res))
-    	rownames(datat) <- names(celfnt)
+    	colnames(exprs(datat)) <- names(celfnt)
     	## rename objects
-    	data.hthgu133a <- datat[rownames(sampleinfo.cmap)[myx], , drop=FALSE]
+    	data.hthgu133a <- exprs(datat)[,rownames(sampleinfo.cmap)[myx] , drop=FALSE]
     	rm(list=c("datat", "rr2", "abatch"))
     	gc()
+    	data.hthgu133a <- t(data.hthgu133a)
     	save(list=c("data.hthgu133a", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file="temp/cmap_hthgu133a_rma.RData")
     } else { load("temp/cmap_hthgu133a_rma.RData") }
     #save(list=ls(), compress=TRUE, file="ws.RData")
