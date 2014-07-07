@@ -7,4 +7,4 @@ Author: Benjamin Haibe-Kains,
 Maintainer: Benjamin Haibe-Kains <benjamin.haibe.kains@utoronto.ca>
 Description: This package contains a set of functions to perform large-scale analysis of pharmacogenomic data
 License: Artistic-2.0
-Depends: inSilicoDb, jetset, MetaGx, genefu, MASS, sva, gdata, R.utils, parallel, Hmisc, affy, affxparser, affyio, frma, hthgu133afrmavecs, hthgu133acdf, genefu, WriteXLS
+Depends: inSilicoDb, jetset, MetaGx, genefu, MASS, sva, gdata, R.utils, parallel, Hmisc, affy, affxparser, affyio, frma, hthgu133afrmavecs, hthgu133acdf, genefu, WriteXLS, rcdk

@@ -7,7 +7,7 @@
 #	Normalize and import all data from Connectivity Map
 
 `RMAnormalizationCMAP` <- 
-function () {
+function (gene=TRUE) {
   
   # rm(list=ls())
 
@@ -28,7 +28,11 @@ function () {
   badchars <- "[:]|[-]|[+]|[*]|[%]|[$]|[#]|[{]|[}]|[[]|[]]|[|]|[\\^]|[/]|[\\]|[.]|[_]|[ ]"
 
   # normalization
-  myfn <- file.path(respath, "cmap_rma.RData")
+  if (gene){
+    myfn <- file.path(respath, "cmap_rma_ENTREZ.RData")
+  } else {
+    myfn <- file.path(respath, "cmap_rma.RData")
+  }
 
   if(!file.exists(myfn)) {
     ## read cel files data
@@ -102,16 +106,16 @@ function () {
     	druginfo$cmap_name_id <- druginfo_lamb[match(druginfo$cmap_name, druginfo_lamb$cmap_name, nomatch = NA), "cmap_name_id"]
     	druginfo$CBID         <- druginfo_lamb[match(druginfo$cmap_name, druginfo_lamb$cmap_name, nomatch = NA), "CBID"]
     	## generate a unique id per drug
-    	druginfo$drug.id <- paste("drug.cmap", as.numeric(as.factor(druginfo$cmap_name)), sep=".")
-    	sampleinfo <- data.frame(sampleinfo, "cmap_name"=druginfo$cmap_name, "drug.id"=as.character(druginfo$drug.id))
+    	druginfo$drug_id <- paste("drug.cmap", as.numeric(as.factor(druginfo$cmap_name)), sep=".")
+    	sampleinfo <- data.frame(sampleinfo, "cmap_name"=druginfo$cmap_name, "drug_id"=as.character(druginfo$drug_id))
     	## keep only the unique drugs
     	druginfo <- druginfo[!duplicated(druginfo$cmap_name), , drop=FALSE]
-    	rownames(druginfo) <- druginfo$drug.id
+    	rownames(druginfo) <- druginfo$drug_id
 
 
     	## add SMILES and other information about perturbagens
     	#	load ChemBank data in MLD MOL (.sdf) and convert into matrix
-    	CBdata <- load.molecules(c("data/CMAP/CmapChembankCompounds-1.sdf","data/CMAP/CmapChembankCompounds-2.sdf")) # molecule data
+    	CBdata <- load.molecules(c("data/CMAP/CmapChembankCompounds.sdf")) # molecule data
     	smiles <- CBID  <- inchi <- NULL
     	for (x in  1:length(CBdata)) {
     		CBID    <- c(CBID, get.title(CBdata[[x]]))
@@ -155,12 +159,12 @@ function () {
     		addinfo[xpn[i], "xpassoc"] <- paste(cxpn, collapse="///")
     		for(j in 1:length(cxpn)) {
     			if(is.na(sampleinfo[cxpn[j], "batch_id"])) { sampleinfo[cxpn[j], "batch_id"] <- sampleinfo[xpn[i], "batch_id"] }
-    			if(is.na(sampleinfo[cxpn[j], "cell2"])) { sampleinfo[cxpn[j], "cell2"] <- sampleinfo[xpn[i], "cell2"] }
+    			if(is.na(sampleinfo[cxpn[j], "cell_id"])) { sampleinfo[cxpn[j], "cell_id"] <- sampleinfo[xpn[i], "cell_id"] }
     			if(is.na(sampleinfo[cxpn[j], "vehicle_scan_id4"])) { sampleinfo[cxpn[j], "vehicle_scan_id4"] <- sampleinfo[xpn[i], "vehicle_scan_id4"] }
     			if(is.na(sampleinfo[cxpn[j], "scanner"])) { sampleinfo[cxpn[j], "scanner"] <- sampleinfo[xpn[i], "scanner"] }
     			if(is.na(sampleinfo[cxpn[j], "vehicle"])) { sampleinfo[cxpn[j], "vehicle"] <- sampleinfo[xpn[i], "vehicle"] }
     			if(is.na(sampleinfo[cxpn[j], "array3"])) { sampleinfo[cxpn[j], "array3"] <- sampleinfo[xpn[i], "array3"] }
-    			sampleinfo[cxpn[j], "concentration..M."] <- sampleinfo[cxpn[j], "duration..h."] <- 0
+    			sampleinfo[cxpn[j], "concentration_M"] <- sampleinfo[cxpn[j], "duration_h"] <- 0
     			if(is.na(sampleinfo[cxpn[j], "perturbation_scan_id"])) { sampleinfo[cxpn[j], "perturbation_scan_id"] <- sampleinfo[xpn[i], "perturbation_scan_id"] } else { sampleinfo[cxpn[j], "perturbation_scan_id"] <- paste(sampleinfo[cxpn[j], "perturbation_scan_id"], sampleinfo[xpn[i], "perturbation_scan_id"], sep="///") }
 
     			if(is.na(addinfo[cxpn[j], "xpassoc"])) { addinfo[cxpn[j], "xpassoc"] <- xpn[i] } else { addinfo[cxpn[j], "xpassoc"] <- paste(addinfo[cxpn[j], "xpassoc"], xpn[i], sep="///") }
@@ -228,7 +232,7 @@ function () {
     	save(list=c("data.hthgu133a", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file="temp/cmap_hthgu133a_rma.RData")
     } else { load("temp/cmap_hthgu133a_rma.RData") }
     #save(list=ls(), compress=TRUE, file="ws.RData")
-
+    
     probeset.common <- intersect(colnames(data.hgu133a), colnames(data.hthgu133a))
 
     # filter data
@@ -292,25 +296,25 @@ function () {
     save(list=c("data.cmap", "annot.cmap", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file=fff)
     } else { load(fff) }
 
-    ## perform a second round of quantile normalization
-    fff <- file.path("temp", "cmap_quantile2_rma.RData")
-    if(!file.exists(fff)) {
-      ## compute the median profile of HT_HG-U133A samples
-      myx <- !is.na(sampleinfo.cmap[ ,"chiptype"]) & sampleinfo.cmap[ ,"chiptype"] == "HT_HG-U133A"
-      tt <- t(apply(data.cmap, 1, sort, decreasing=TRUE))
-      qnormvec.hthgu133acmap <- apply(tt, 2, median, na.rm=TRUE)
-      probe.name <- probeset.common
-      save(list=c("qnormvec.hthgu133acmap", "probe.name"), file=file.path("temp", "cmap_qnormvec_hthgu133a.RData"))
-
-      ## perform the quantile normalization to all samples
-      tt <- t(apply(data.cmap[ , probe.name, drop=FALSE], 1, function(x, y) {
-      	ix <- order(x, decreasing=TRUE)
-      	x[ix] <- y
-      	return(x)
-      }, y=qnormvec.hthgu133acmap))
-      data.cmap <- tt
-      save(list=c("data.cmap", "annot.cmap", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file="temp/cmap_quantile2_rma.RData")
-    }
+#     ## perform a second round of quantile normalization
+#     fff <- file.path("temp", "cmap_quantile2_rma.RData")
+#     if(!file.exists(fff)) {
+#       ## compute the median profile of HT_HG-U133A samples
+#       myx <- !is.na(sampleinfo.cmap[ ,"chiptype"]) & sampleinfo.cmap[ ,"chiptype"] == "HT_HG-U133A"
+#       tt <- t(apply(data.cmap, 1, sort, decreasing=TRUE))
+#       qnormvec.hthgu133acmap <- apply(tt, 2, median, na.rm=TRUE)
+#       probe.name <- probeset.common
+#       save(list=c("qnormvec.hthgu133acmap", "probe.name"), file=file.path("temp", "cmap_qnormvec_hthgu133a.RData"))
+#
+#       ## perform the quantile normalization to all samples
+#       tt <- t(apply(data.cmap[ , probe.name, drop=FALSE], 1, function(x, y) {
+#       	ix <- order(x, decreasing=TRUE)
+#       	x[ix] <- y
+#       	return(x)
+#       }, y=qnormvec.hthgu133acmap))
+#       data.cmap <- tt
+#       save(list=c("data.cmap", "annot.cmap", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file="temp/cmap_quantile2_rma.RData")
+#     }
   
     ## gene-centric data
     fff <- file.path("temp", "cmap_rma_ENTREZ.RData")
@@ -323,21 +327,22 @@ function () {
       annot.cmap <- annot.cmap[myx, , drop=FALSE]
       colnames(data.cmap) <- rownames(annot.cmap) <- paste("geneid", annot.cmap[ ,"jetset.EntrezID"], sep=".")
       save(list=c("data.cmap", "annot.cmap", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file=fff)
-    }
-    fff <- file.path("temp", "cmap_quantile2_rma_ENTREZ.RData")
-    if(!file.exists(fff)) {
-      load(file.path("temp", "cmap_quantile2_rma.RData"))
-      ## gene centric data
-      myx <- which(annot.cmap[ , "best"])
-      myx <- myx[!duplicated(annot.cmap[myx, "jetset.EntrezID"])]
-      data.cmap <- data.cmap[ , myx, drop=FALSE]
-      annot.cmap <- annot.cmap[myx, , drop=FALSE]
-      colnames(data.cmap) <- rownames(annot.cmap) <- paste("geneid", annot.cmap[ ,"jetset.EntrezID"], sep=".")
-      save(list=c("data.cmap", "annot.cmap", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file=fff)
-    }  
+    } else { load(fff) }
+#     fff <- file.path("temp", "cmap_quantile2_rma_ENTREZ.RData")
+#     if(!file.exists(fff)) {
+#       load(file.path("temp", "cmap_quantile2_rma.RData"))
+#       ## gene centric data
+#       myx <- which(annot.cmap[ , "best"])
+#       myx <- myx[!duplicated(annot.cmap[myx, "jetset.EntrezID"])]
+#       data.cmap <- data.cmap[ , myx, drop=FALSE]
+#       annot.cmap <- annot.cmap[myx, , drop=FALSE]
+#       colnames(data.cmap) <- rownames(annot.cmap) <- paste("geneid", annot.cmap[ ,"jetset.EntrezID"], sep=".")
+#       save(list=c("data.cmap", "annot.cmap", "sampleinfo.cmap", "druginfo.cmap"), compress=TRUE, file=fff)
+#     }  
   
   } else { load(myfn) }
-
+  ret <- list("data.cmap"=data.cmap, "annot.cmap"=annot.cmap, "sampleinfo.cmap"=sampleinfo.cmap, "druginfo.cmap"=druginfo.cmap)
+  return(ret)
 }
 
 

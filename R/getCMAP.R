@@ -4,29 +4,48 @@
 ## October 23, 2013
 ########################
 
-#################################################
-## Get fRMA normalized CMAP data from InSilicoDB
+########################################################
+## Get fRMA or RMA normalized CMAP data from InSilicoDB
 ##
 ## 
-#################################################
+########################################################
 
 `getCMAP` <- 
-function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
+function (std=c("combat", "quantile", "none"), gene=TRUE, normalization=c("rma", "frma"), verbose=FALSE) {
 
   std <- match.arg(std)
+  normalization <- match.arg(normalization)
+  esets <- list()
   
-  inSilicoDb::InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
-  # inSilicoDb::getCurationInfo(dataset="ISDB12026")
-  if (verbose) { message("Downloading the Connectivity Map dataset from InSilicoDB") }
-  platfs <- inSilicoDb::getPlatforms(dataset="ISDB12026")
-  esets <- inSilicoDb::getDatasets(dataset="ISDB12026", norm="FRMA", curation="24805", features="PROBE")
-  inSilicoDb::InSilicoLogout()
-  
+  if (normalization == "frma") {
+    inSilicoDb::InSilicoLogin(login="bhaibeka@gmail.com", password="747779bec8a754b91076d6cc1f700831")
+    # inSilicoDb::getCurationInfo(dataset="ISDB12026")
+    if (verbose) { message("Downloading the Connectivity Map dataset from InSilicoDB") }
+    platfs <- inSilicoDb::getPlatforms(dataset="ISDB12026")
+    esets <- inSilicoDb::getDatasets(dataset="ISDB12026", norm="FRMA", curation="24805", features="PROBE")
+    inSilicoDb::InSilicoLogout()
+  }
+  if (normalization == "rma"){
+    datavector <- RMAnormalizationCMAP(gene=gene)
+    data.cmap <- ExpressionSet(t(datavector$data.cmap))
+    pData(data.cmap) <- datavector$sampleinfo.cmap
+    fData(data.cmap) <- datavector$annot.cmap
+    esets <- data.cmap
+#     for(i in 1:length(unique(pData(data.cmap)[,"chiptype"]))) {
+#       chipData <- pData(data.cmap)[pData(data.cmap)[,"chiptype"] == unique(pData(data.cmap)[,"chiptype"])[i],]
+#       expression <- exprs(data.cmap)[,rownames(chipData)]
+#       eset <- ExpressionSet(expression)
+#       fData(eset) <- fData(data.cmap)
+#       pData(eset) <- chipData
+#       esets[[i]] <- eset  
+#     }
+  }
   ## merge esets
   if (verbose) { message("Merging CMAP1 and CMAP2") }
   eset <- MetaGx::platformMerging(esets=esets)
   Biobase::pData(eset)[Biobase::pData(eset) == "" | Biobase::pData(eset) == "NA"] <- NA
   ## check column format
+  ############ NEED TO FIX THE DOTS ########################
   Biobase::pData(eset)[ , "concentration_M"] <- as.numeric(Biobase::pData(eset)[ , "concentration_M"])
   Biobase::pData(eset)[ , "duration_h"] <- as.numeric(Biobase::pData(eset)[ , "duration_h"])
   
@@ -49,11 +68,15 @@ function (std=c("combat", "quantile", "none"), gene=TRUE, verbose=FALSE) {
   )
     
   ## gene centric expression
-  if (gene) {
+  if (gene && normalization=="frma") {
     if (verbose) { message("Gene centric data") }
     eset <- MetaGx::probeGeneMapping(eset=eset, platform="GPL96", method="jetset")
   }
-  
+  if (gene && normalization=="rma"){
+    colnames(fData(eset))[which(colnames(fData(eset))=="jetset.EntrezID")] <- "ENTREZID"
+    colnames(fData(eset))[which(colnames(fData(eset))=="jetset.symbol")] <- "SYMBOL"
+  }
+
   ## get cell line information
   # celline <- sort(unique(Biobase::pData(eset)[ , "cell_id"]))
   # celline <- read.csv(file.path(system.file("extdata", package="PharmacoGx"), "cell_line_matching_all.csv"), stringsAsFactors=FALSE)
