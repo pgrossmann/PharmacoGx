@@ -7,12 +7,12 @@
 #	Normalize and import all data from Connectivity Map
 
 `RMAnormalizationCMAP` <- 
-function (gene=TRUE) {
+function (gene=TRUE, downloadFiles=TRUE, datapath= file.path("data", "CMAP"), rawpath = file.path(datapath, "cel")) {
   
   # rm(list=ls())
 
   set.seed(54321)
-
+ 
   ## number of cpu cores available for the analysis pipeline
   ## set to 'NULL' if all the available cores should be used
 
@@ -21,9 +21,12 @@ function (gene=TRUE) {
 
   respath <- file.path("temp")
   if(!file.exists(respath)) { dir.create(respath, showWarnings=FALSE) }
+  
+  if(!file.exists(datapath)) { dir.create(datapath, showWarnings=FALSE) }
+  if(!file.exists(rawpath)) { dir.create(rawpath, showWarnings=FALSE) }
 
-  datapath <- file.path("data", "CMAP")
-  rawpath <- file.path(datapath, "cel")
+ # datapath <- file.path("data", "CMAP")
+ # rawpath <- file.path(datapath, "cel")
 
   badchars <- "[:]|[-]|[+]|[*]|[%]|[$]|[#]|[{]|[}]|[[]|[]]|[|]|[\\^]|[/]|[\\]|[.]|[_]|[ ]"
 
@@ -40,6 +43,29 @@ function (gene=TRUE) {
     ## CEL file names
     celfn <- list.files(rawpath, full.names=TRUE)
     celfns <- list.files(rawpath, full.names=FALSE)
+    
+    if (!length(celfn)){
+      if(!downloadFiles){
+        stop("Cel Files not found! Either provide the cel files or set downloadFiles to TRUE to have them automatically downloaded to rawpath.")
+      } else {
+        filesTodownload <- getURL("ftp://ftp.broad.mit.edu/pub/cmap/",dirlistonly = TRUE)
+        filesTodownload <- strsplit(filesTodownload, split='\n')
+        filesTodownload <- grep(x=filesTodownload[[1]], pattern="cmap_build02", value=TRUE)
+        for (fn in filesTodownload){
+          download.file(url=file.path("ftp://ftp.broad.mit.edu/pub/cmap/", fn), destfile=file.path(rawpath, fn))
+          unzip(zipfile=file.path(rawpath, fn),exdir=rawpath)
+          file.remove(file.path(rawpath, fn))
+        }
+        for (fn in list.files(path=rawpath)){
+          bunzip2.default(filename=file.path(rawpath, fn))
+          file.remove(file.path(rawpath, fn))
+        }
+        celfn <- list.files(rawpath, full.names=TRUE)
+        celfns <- list.files(rawpath, full.names=FALSE)
+      }
+    }  
+      
+    
     ## experiments' names
     names(celfn) <- gsub(".CEL|.CEL.GZ", "", toupper(list.celfiles(rawpath)))
 
