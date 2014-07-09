@@ -60,6 +60,8 @@ function (gene=TRUE, downloadFiles=TRUE, datapath= file.path("data", "CMAP"), ra
           bunzip2.default(filename=file.path(rawpath, fn))
           file.remove(file.path(rawpath, fn))
         }
+        celfn <- list.files(rawpath, full.names=TRUE)
+        celfns <- list.files(rawpath, full.names=FALSE)
       }
     }  
       
