@@ -30,7 +30,7 @@ function (x1, p1, x2, p2, ...) {
   p1 <- p1 / sum(p1, na.rm=TRUE)
   p2 <- -log10(p2)
   p2 <- p2 / sum(p2, na.rm=TRUE)
-  w <- p1 * p2
+  w <- p1 + p2
   ## compute genome-wide connectivity score
   res <- corWeighted(x=x1, y=x2, w=w, ...)
 	return(res)

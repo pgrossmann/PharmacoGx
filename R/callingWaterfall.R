@@ -20,31 +20,49 @@
 ##  amax: Activity at max concentration (positive values)
 ##  intermediate.fold: vector of fold changes used to define the intermediate sensitivities for ic50, actarea and amax respectively
 `callingWaterfall` <- 
-function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, name="Drug", plot=FALSE) {
+function (x, type=c("IC50", "AUC", "AMAX"), intermediate.fold=c(4, 1.2, 1.2), cor.min.linear=0.95, name="Drug", plot=FALSE) {
   
   type <- match.arg(type)
-  
+  if (any(!is.na(intermediate.fold) & intermediate.fold < 0)) { intermediate.fold <- intermediate.fold[!is.na(intermediate.fold) & intermediate.fold < 0] <- 0 }
   if (is.null(names(x))) { names(x) <- paste("X", 1:length(x), sep=".") }
   
   xx <- x[complete.cases(x)]
   switch (type,
-    "ic50" = {
+    "IC50" = {
       xx <- -log10(xx)
       ylabel <- "-log10(IC50)"
       ## 4 fold difference around IC50 cutoff
-      interfold <- log10(intermediate.fold[1])
+      if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[1] }
+      if (intermediate.fold != 0) {
+        interfold <- log10(intermediate.fold)
+      } else { 
+        interfold <- 0 
+      }
     },
-    "actarea" = {
-      ylabel <- "Activity area"
+    "AUC" = {
+      ylabel <- "AUC"
       ## 1.2 fold difference around Activity Area cutoff
-      interfold <- intermediate.fold[2]
+      if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[2] }
+      interfold <- intermediate.fold
     },
-    "amax" = {
+    "AMAX" = {
       ylabel <- "Amax"
       ## 1.2 fold difference around Amax
-      interfold <- intermediate.fold[3]
+      if (length(intermediate.fold) == 3) { intermediate.fold <- intermediate.fold[3] }
+      interfold <- intermediate.fold
     }
   )
+  
+  if (length(xx) < 3) {
+    tt <- array(NA, dim=length(x), dimnames=list(names(x)))
+    if (interfold == 0) {
+      tt <- factor(tt, levels=c("resistant", "sensitive"))
+    } else {
+      tt <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+    }
+    return (tt)
+  }
+  
   oo <- order(xx, decreasing=TRUE)
   ## test linearity with Pearson correlation
   cc <- cor.test(-xx[oo], 1:length(oo), method="pearson")
@@ -67,23 +85,51 @@ function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2)
   }
   ## identify intermediate sensitivities
   switch (type,
-    "ic50" = {
-      rang <- c(xx[oo][cutoff] - interfold, xx[oo][cutoff] + interfold)
+    "IC50" = {
+      if (interfold == 0) {
+        rang <- c(xx[oo][cutoff], xx[oo][cutoff])
+      } else {
+        rang <- c(xx[oo][cutoff] - interfold, xx[oo][cutoff] + interfold)
+      }
     },
-    "actarea" = {
-     rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+    "AUC" = {
+      if (interfold == 0) {
+        rang <- c(xx[oo][cutoff], xx[oo][cutoff])
+      } else {
+        rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+      }
     },
-    "amax" = {
-      rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+    "AMAX" = {
+      if (interfold == 0) {
+        rang <- c(xx[oo][cutoff], xx[oo][cutoff])
+      } else {
+        rang <- c(xx[oo][cutoff] / interfold, xx[oo][cutoff] * interfold)
+      }
     }
   )
+  
+  
+  ## check whether range is either min or max
+  if (rang[2] >= max(xx)) {
+    rang[2] <- sort(unique(xx), decreasing=TRUE)[2]
+  }
+  if (rang[2] <= min(xx)) {
+    rang[2] <- sort(unique(xx), decreasing=FALSE)[2]
+  }
+  if (rang[1] <= min(xx)) {
+    rang[1] <- sort(unique(xx), decreasing=FALSE)[2]
+  }
+  if (rang[1] >= max(xx)) {
+    rang[1] <- sort(unique(xx), decreasing=TRUE)[2]
+  }
+  
   ## compute calls
   calls <- rep(NA, length(xx))
   names(calls) <- names(xx)
   calls[xx < rang[1]] <- "resistant"
-  calls[xx > rang[2]] <- "sensitive"
-  calls[xx >= rang[1] & xx <= rang[2]] <- "intermediate"
-      
+  calls[xx >= rang[2]] <- "sensitive"
+  calls[xx >= rang[1] & xx < rang[2]] <- "intermediate"
+  
   if (plot) {
     par(mfrow=c(2, 1))
     ccols <- rainbow(4)
@@ -111,6 +157,11 @@ function (x, type=c("ic50", "actarea", "amax"), intermediate.fold=c(4, 1.2, 1.2)
   tt <- rep(NA, length(x))
   names(tt) <- names(x)
   tt[names(calls)] <- calls
+  if (interfold == 0) {
+    tt <- factor(tt, levels=c("resistant", "sensitive"))
+  } else {
+    tt <- factor(tt, levels=c("resistant", "intermediate", "sensitive"))
+  }
   return(tt)  
 }
 
