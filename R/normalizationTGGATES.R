@@ -181,7 +181,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
     "E-MTAB-800"=rat2302.db)
   
   pVerbose("map probes to entrez gene ids")
-  gids <- select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
+  gids <- AnnotationDbi::select(db,rownames(geneex),col=c("ENTREZID","PROBEID"))
   
   ## remove probes not matchable to gene id
   gids.fullmatched <- gids[!is.na(gids[,"ENTREZID"]), , drop=F]
