@@ -169,10 +169,10 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   
   ## curate phenotype data ##
   
-  pVerbose("remove phenotype duplicates")
-  pheno.unique <- duplicate.pheno(pheno)
-  rownames(pheno.unique) <- pheno.unique[,"Source.Name"] # check if really unique
-  print(sprintf("%s duplicate sample(s) names have been removed",nrow(pheno)-nrow(pheno.unique)))
+#   pVerbose("remove phenotype duplicates")
+#   pheno.unique <- duplicate.pheno(pheno)
+#   rownames(pheno.unique) <- pheno.unique[,"Source.Name"] # check if really unique
+#   print(sprintf("%s duplicate sample(s) names have been removed",nrow(pheno)-nrow(pheno.unique)))
   # keep unique expressions
   geneex <- geneex[,pheno.unique[,"Array.Data.File"]]
   # assign sample phenotype labels to expression data instead of CEL file names
