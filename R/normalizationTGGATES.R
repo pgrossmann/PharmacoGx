@@ -13,8 +13,9 @@
 #' from the TG-GATEs databse.
 #' 
 #' Gene expression is normalized by RMA algorithm, and saved to an Biobase expression set.
-#' Should the gene expression data hosted by Array Express be already bundled in an expression set,
-#' data is not re-downloaded.
+#' Should the gene expression data hosted by Array Express be already bundled in an expression set ("*eSet_orig.rda"),
+#' expression data is not re-downloaded. Curation is always re-done with current sdrf file anyway.
+#' SDRF file MUST be provided or re-downloaded within a total dataset!
 #' 
 #' @param identifier [character] accession number in Array Express
 #' @param outdidr [character] directory to work in (download, etc.) and output results
@@ -23,9 +24,12 @@
 #' or NULL otherwise
 #' @param verbose [logical] print additional processing information
 #' @param resultPref [character] prefix or result file. will be appended by ".rda"
+#' @param accessions may contain more than one tissue type from the same sample (e.g. 799);
+#' in this case tissue will determine which one to return to get unique sample names.
 #' @param return [ExpressionSet] expression set object, this object is named <resultPref>
-normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",identifier), unzip=TRUE, sourcedir=NULL, 
-  verbose=FALSE, resultPref=sprintf("%s.eSet",identifier)) {
+normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",identifier), 
+                              unzip=TRUE, sourcedir=NULL, verbose=FALSE, 
+                              resultPref=sprintf("%s.eSet",identifier), tissue=c("liver","kidney")) {
   #-----------------------------------------------------------------
   ### setup code
   #-----------------------------------------------------------------
@@ -38,6 +42,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   
   ### global variables ###
   resultPref <- gsub("-","",resultPref)
+  tissue <- match.arg(tissue)
   
   ### aux. functions ###
   
@@ -56,8 +61,9 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   #' @param phenotable [data.frame/table] full phenotype table (sdrf file)
   #' @param return [data.frame/table] subset of phenotype table without duplicates
   duplicate.pheno <- function(phenotable) {
-    stop("Don't use this function now")
-    phenotable[!duplicated(phenotable[,"Source.Name"]), , drop=F]
+    dups <- duplicated(phenotable[,"Source.Name"])
+    pVerbose(sprintf("%s duplicated entries are removed",sum(dups)))
+    phenotable[!dups, , drop=F]
   }
   
   #' TODO: insource from below
@@ -72,6 +78,20 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   #'
   map.genes <- function(probelist,identifier) {
     stop("Don't use this function now")
+  }
+  
+  #' Datasets may have multiple tissues (liver, kidney).
+  #' This function grabs source names for only a single tissue
+  #' and if duplicated source names the first one is taken. 
+  #' Duplicated source names can occure BEFORE applying this function
+  #' as multiple samples can be extracted for an individual rat 
+  #' (e.g. both liver and kidney)
+  take.tissue <- function(phenotable, tissue) {
+    tt <- phenotable$Factor.Value.OrganismPart.
+    pheno.sub <- phenotable[tt==tissue, ,drop=F]
+    if (nrow(pheno.sub) == 0)
+      stop(sprintf("Data does not contain any %s data"), tissue)
+    pheno.sub
   }
   
   #-----------------------------------------------------------------
@@ -169,10 +189,14 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   
   ## curate phenotype data ##
   
-#   pVerbose("remove phenotype duplicates")
-#   pheno.unique <- duplicate.pheno(pheno)
-    pheno.unique <- pheno #
-#   rownames(pheno.unique) <- pheno.unique[,"Source.Name"] # check if really unique
+  containsOneTissue <- ifelse(!is.null(pheno$Factor.Value.OrganismPart.), FALSE, TRUE)
+  if (!containsOneTissue) {
+    pVerbose("getting data for only one tissue")
+    pheno <- take.tissue(pheno, tissue=tissue)
+  } else pheno <- pheno
+  pVerbose("remove phenotype duplicates")
+  pheno.unique <- duplicate.pheno(pheno)
+  rownames(pheno.unique) <- pheno.unique[,"Source.Name"] # to also check if really unique
 #   print(sprintf("%s duplicate sample(s) names have been removed",nrow(pheno)-nrow(pheno.unique)))
   # keep unique expressions
   geneex <- geneex[,pheno.unique[,"Array.Data.File"]]
@@ -218,7 +242,10 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   ## save expression set to rdata
   eSetName <- resultPref
   assign(eSetName, eSet.processed)
-  fullEset.fn <- file.path(sourcedir,sprintf("%s.rda",resultPref))
+  if (containsOneTissue)
+    fullEset.fn <- file.path(sourcedir,sprintf("%s.rda",resultPref))
+  else
+    fullEset.fn <- file.path(sourcedir,sprintf("%s_%s.rda",resultPref,tissue))
   save(list=c(eSetName), file=fullEset.fn, compress=TRUE)
   message(sprintf("sucessfully saved full processed %s data to %s", identifier, fullEset.fn))
   get(eSetName) # return eSet
