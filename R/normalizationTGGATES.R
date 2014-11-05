@@ -171,6 +171,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   
 #   pVerbose("remove phenotype duplicates")
 #   pheno.unique <- duplicate.pheno(pheno)
+    pheno.unique <- pheno
 #   rownames(pheno.unique) <- pheno.unique[,"Source.Name"] # check if really unique
 #   print(sprintf("%s duplicate sample(s) names have been removed",nrow(pheno)-nrow(pheno.unique)))
   # keep unique expressions
