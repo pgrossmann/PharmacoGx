@@ -9,6 +9,13 @@
 #######################################################################################################
 
 
+#' Downloads toxicogenomic data compromising drug information and gene expression response data 
+#' from the TG-GATEs databse.
+#' 
+#' Gene expression is normalized by RMA algorithm, and saved to an Biobase expression set.
+#' Should the gene expression data hosted by Array Express be already bundled in an expression set,
+#' data is not re-downloaded.
+#' 
 #' @param identifier [character] accession number in Array Express
 #' @param outdidr [character] directory to work in (download, etc.) and output results
 #' @param unzip [logical] if downloaded zip files are required to be unzipped
@@ -40,6 +47,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   #' @param samples [data.frame/table] subtable of duplica
   #' @param return row
   duplicate.samples <- function(samples) {
+    stop("Don't use this function now")
     samples[1, , drop=F]
   }
   
@@ -48,6 +56,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   #' @param phenotable [data.frame/table] full phenotype table (sdrf file)
   #' @param return [data.frame/table] subset of phenotype table without duplicates
   duplicate.pheno <- function(phenotable) {
+    stop("Don't use this function now")
     phenotable[!duplicated(phenotable[,"Source.Name"]), , drop=F]
   }
   
@@ -55,14 +64,14 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   #' DEAL with duplicate genes.
   #'
   duplicate.genes <- function(geneexpressions) {
-  
+    stop("Don't use this function now")
   }
   
   #' TODO: insource from below
   #' PERFORM mapping
   #'
   map.genes <- function(probelist,identifier) {
-  
+    stop("Don't use this function now")
   }
   
   #-----------------------------------------------------------------
@@ -124,7 +133,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   #featu <- read.table(adf, sep="\t", stringsAsFactors=F)
   
   ## read in experiment data ##
-  pVerbose("reading in experiment data")
+#   pVerbose("reading in experiment data")
   #experiment <- read.table(idf, sep="\t", stringsAsFactors=F)
 
   ## read in, normalize, and save initial expression data ##
