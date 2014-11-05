@@ -189,6 +189,7 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   
   ## curate phenotype data ##
   
+  ## if accession contains more than one tissue type
   containsOneTissue <- ifelse(!is.null(pheno$Factor.Value.OrganismPart.), FALSE, TRUE)
   if (!containsOneTissue) {
     pVerbose("getting data for only one tissue")
@@ -240,12 +241,12 @@ normalize.TGGATES <- function(identifier, outdir=sprintf("normalizeTGGATES_%s",i
   pd <- new("AnnotatedDataFrame", data=pheno.unique, varMetadata=varmetadata)
   eSet.processed <- new("ExpressionSet", exprs=geneex, phenoData=pd, annotation=annotation(eSet.orig))
   ## save expression set to rdata
+  if (!containsOneTissue) {
+    resultPref <- sprintf("%s_%s",resultPref,tissue)
+  }
+  fullEset.fn <- file.path(sourcedir,sprintf("%s.rda",resultPref))
   eSetName <- resultPref
   assign(eSetName, eSet.processed)
-  if (containsOneTissue)
-    fullEset.fn <- file.path(sourcedir,sprintf("%s.rda",resultPref))
-  else
-    fullEset.fn <- file.path(sourcedir,sprintf("%s_%s.rda",resultPref,tissue))
   save(list=c(eSetName), file=fullEset.fn, compress=TRUE)
   message(sprintf("sucessfully saved full processed %s data to %s", identifier, fullEset.fn))
   get(eSetName) # return eSet
